@@ -21,8 +21,7 @@ Among different sources of data, Allen Brain Institute hosts a rich database of 
 
 <img src="images/Atlas_Alignment_banner.jpg" height="239" width="598"/>
 
-Repository page: https://github.com/BlueBrain/atlas-alignment <br />
-Official documentation: https://atlas-alignment.readthedocs.io/en/latest/
+Useful links: [GitHub repo](https://github.com/BlueBrain/atlas-alignment), [Docs](https://atlas-alignment.readthedocs.io/en/latest/).
 
 **Multimodal registration and alignment toolbox.**
 
