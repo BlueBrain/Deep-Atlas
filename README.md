@@ -4,7 +4,7 @@ Deep Atlas is a suite of tools created by the Blue Brain Project to manipulate b
 - [Atlas Download Tools](#atldld) — Search, download, and prepare atlas data.
 - [Atlas Alignment](#atlalign) — Perform multimodal image registration and alignment.
 - [Atlas Annotation](#atlannot) — Image registration for annotation atlases.
-- [Atlas Interpolation](#atlinter) — Image interpolation and optical flow computation.
+- [Atlas Interpolation](#atlinter) — Slice interpolation for atlases.
 
 ## <a name="atldld"></a> Atlas Download Tools
 
