@@ -1,6 +1,6 @@
 # Deep Atlas
 
-Deep Atlas is a suite of tools created by the Blue Brain Project to manipulate atlas images. 
+Deep Atlas is a suite of tools created by the Blue Brain Project to manipulate brain atlas images. 
 - [Atlas Download Tools](#atldld) — Search, download, and prepare atlas data.
 - [Atlas Alignment](#atlalign) — Perform multimodal image registration and alignment.
 - [Atlas Annotation](#atlannot) — Image registration for annotation atlases.
