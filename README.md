@@ -1,10 +1,10 @@
 # Deep Atlas
 
 Deep Atlas is a 
-- Atlas Alignment — Perform multimodal image registration and alignment.
-- Atlas Download Tools — Search, download, and prepare atlas data.
+- [Atlas Alignment](#atlalign) — Perform multimodal image registration and alignment.
+- [Atlas Download Tools](#atldld) — Search, download, and prepare atlas data.
 
-## Atlas Alignment
+## <a name="atlalign"></a> Atlas Alignment
 **Multimodal registration and alignment toolbox.**
 
 Repository page: https://github.com/BlueBrain/atlas-alignment <br />
@@ -14,7 +14,7 @@ Official documentation: https://atlas-alignment.readthedocs.io/en/latest/
 
 Atlas Alignment is a toolbox to perform multimodal image registration. It includes both traditional and supervised deep learning models. This project originated from the Blue Brain Project efforts on aligning mouse brain atlases obtained with ISH gene expression and Nissl stains.
 
-## Atlas Download Tools
+## <a name="atldld"></a> Atlas Download Tools
 **Search, download, and prepare atlas data.**
 
 Repository page: https://github.com/BlueBrain/Atlas-Download-Tools <br />
