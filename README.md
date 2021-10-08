@@ -10,8 +10,7 @@ Deep Atlas is a suite of tools created by the Blue Brain Project to manipulate b
 
 <img src="images/Atlas-Download-Tools-banner.jpg" height="244" width="610"/>
 
-Repository page: https://github.com/BlueBrain/Atlas-Download-Tools <br />
-Official documentation: https://atlas-download-tools.readthedocs.io/en/latest/
+Useful links: [GitHub repo](https://github.com/BlueBrain/Atlas-Download-Tools), [Docs](https://atlas-download-tools.readthedocs.io/en/latest/).
 
 **Search, download, and prepare atlas data.**
 
