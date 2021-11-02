@@ -1,14 +1,15 @@
 # Deep Atlas
 Deep Atlas is a suite of tools created by the Blue Brain Project to manipulate
 brain atlas images. 
-- [Atlas Download Tools](#atldld) — Search, download, and prepare atlas data.
-- [Atlas Alignment](#atlalign) — Perform multimodal image registration and
-  alignment.
-- [Atlas Annotation](#atlannot) — Image registration for region annotation
-  atlases.
-- [Atlas Interpolation](#atlinter) — Slice interpolation for atlases.
+- [Atlas Download Tools](#atlas-download-tools) — Search, download, and prepare
+  atlas data.
+- [Atlas Alignment](#atlas-alignment) — Perform multimodal image registration
+  and alignment.
+- [Atlas Annotation](#atlas-annotation) — Image registration for region
+  annotation atlases.
+- [Atlas Interpolation](#atlas-interpolation) — Slice interpolation for atlases.
 
-## <a name="atldld"></a> Atlas Download Tools
+## Atlas Download Tools
 <img src="images/Atlas-Download-Tools-banner.jpg" height="244" width="610"/>
 
 Useful links:
@@ -24,7 +25,7 @@ entire datasets, as well as the corresponding metadata. It can further
 pre-process the image data to place it in the standard reference space.
 
 
-## <a name="atlalign"></a> Atlas Alignment
+## Atlas Alignment
 <img src="images/Atlas_Alignment_banner.jpg" height="239" width="598"/>
 
 Useful links:
@@ -38,8 +39,8 @@ includes both traditional and supervised deep learning models. This project
 originated from the Blue Brain Project efforts on aligning mouse brain atlases
 obtained with ISH gene expression and Nissl stains.
 
-## <a name="atlannot"></a> Atlas Annotation
+## Atlas Annotation
 Coming soon
 
-## <a name="atlinter"></a> Atlas Interpolation
+## Atlas Interpolation
 Coming soon
