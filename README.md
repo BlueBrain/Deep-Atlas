@@ -10,7 +10,7 @@ brain atlas images.
 - [Atlas Interpolation](#atlas-interpolation) — Slice interpolation for atlases.
 
 ## Atlas Download Tools
-<img src="images/Atlas-Download-Tools-banner.jpg" height="244" width="610"/>
+<img alt="Atlas Download Tools Banner" src="images/Atlas-Download-Tools-banner.jpg" width="600"/>
 
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/Atlas-Download-Tools),
@@ -26,7 +26,7 @@ pre-process the image data to place it in the standard reference space.
 
 
 ## Atlas Alignment
-<img src="images/Atlas_Alignment_banner.jpg" height="239" width="598"/>
+<img alt="Atlas Alignment Banner" src="images/Atlas_Alignment_banner.jpg" width="600"/>
 
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/atlas-alignment),
