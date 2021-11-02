@@ -14,7 +14,7 @@ brain atlas images.
 
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/Atlas-Download-Tools),
-[Docs](https://atlas-download-tools.readthedocs.io/en/latest/).
+[Docs](https://atlas-download-tools.readthedocs.io/en/latest).
 
 **Search, download, and prepare atlas data.**
 
@@ -30,7 +30,7 @@ pre-process the image data to place it in the standard reference space.
 
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/atlas-alignment),
-[Docs](https://atlas-alignment.readthedocs.io/en/latest/).
+[Docs](https://atlas-alignment.readthedocs.io/en/latest).
 
 **Multimodal registration and alignment toolbox.**
 
@@ -40,7 +40,29 @@ originated from the Blue Brain Project efforts on aligning mouse brain atlases
 obtained with ISH gene expression and Nissl stains.
 
 ## Atlas Annotation
-Coming soon
+Useful links:
+[GitHub repo](https://github.com/BlueBrain/atlas-annotation).
+
+**Align and improve brain annotation atlases.**
+
+Over the years the Allen Brain institute has constantly improved and updated
+their brain region annotation atlases. Unfortunately the old annotation atlases
+are not always aligned with the new ones. For example, the CCFv2 annotations
+and the Nissl volume are not compatible with the CCFv3 annotation and the
+corresponding average brain volume. This package proposes a number of methods
+for deforming the Nissl volume and the CCFv2 annotations in order to re-align
+them to CCFv3.
 
 ## Atlas Interpolation
-Coming soon
+Useful links:
+[GitHub repo](https://github.com/BlueBrain/atlas-interpolation).
+
+**Interpolate missing section images in gene expression volumes.**
+
+The Allen Brain Institute hosts a rich database of mouse brain imagery. It
+contains a large number of gene expression datasets obtained
+through the in situ hybridization (ISH) staining. While for a given gene
+a number of datasets corresponding to different specimen can be found, each of
+these datasets only contains sparse section images that do not form a
+continuous volume. This package explores techniques that allow to interpolate
+the missing slices and thus reconstruct whole gene expression volumes.
