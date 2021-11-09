@@ -14,7 +14,7 @@ brain atlas images.
 
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/Atlas-Download-Tools),
-[Docs](https://atlas-download-tools.readthedocs.io/en/latest).
+[Docs](https://atlas-download-tools.readthedocs.io).
 
 **Search, download, and prepare atlas data.**
 
@@ -30,7 +30,7 @@ pre-process the image data to place it in the standard reference space.
 
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/atlas-alignment),
-[Docs](https://atlas-alignment.readthedocs.io/en/latest).
+[Docs](https://atlas-alignment.readthedocs.io).
 
 **Multimodal registration and alignment toolbox.**
 
@@ -41,7 +41,8 @@ obtained with ISH gene expression and Nissl stains.
 
 ## Atlas Annotation
 Useful links:
-[GitHub repo](https://github.com/BlueBrain/atlas-annotation).
+[GitHub repo](https://github.com/BlueBrain/atlas-annotation),
+[Docs](https://atlas-annotation.readthedocs.io).
 
 **Align and improve brain annotation atlases.**
 
@@ -55,7 +56,8 @@ them to CCFv3.
 
 ## Atlas Interpolation
 Useful links:
-[GitHub repo](https://github.com/BlueBrain/atlas-interpolation).
+[GitHub repo](https://github.com/BlueBrain/atlas-interpolation),
+[Docs](https://atlas-interpolation.readthedocs.io).
 
 **Interpolate missing section images in gene expression volumes.**
 
