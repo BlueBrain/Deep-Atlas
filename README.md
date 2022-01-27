@@ -68,3 +68,11 @@ a number of datasets corresponding to different specimen can be found, each of
 these datasets only contains sparse section images that do not form a
 continuous volume. This package explores techniques that allow to interpolate
 the missing slices and thus reconstruct whole gene expression volumes.
+
+
+# Funding & Acknowledgment
+The development of this software was supported by funding to the Blue Brain Project, a research center of the École polytechnique fédérale de Lausanne (EPFL), from the Swiss government's ETH Board of the Swiss Federal Institutes of Technology.
+ 
+Copyright © 2021-2022 Blue Brain Project/EPFL
+
+
