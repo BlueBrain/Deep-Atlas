@@ -40,6 +40,8 @@ originated from the Blue Brain Project efforts on aligning mouse brain atlases
 obtained with ISH gene expression and Nissl stains.
 
 ## Atlas Annotation
+<img alt="Atlas Annotation Banner" src="images/Atlas-Annotation-banner.jpg" width="600"/>
+
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/atlas-annotation),
 [Docs](https://atlas-annotation.readthedocs.io).
