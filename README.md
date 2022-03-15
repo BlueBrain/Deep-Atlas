@@ -40,6 +40,8 @@ originated from the Blue Brain Project efforts on aligning mouse brain atlases
 obtained with ISH gene expression and Nissl stains.
 
 ## Atlas Annotation
+<img alt="Atlas Annotation Banner" src="images/Atlas-Annotation-banner.jpg" width="600"/>
+
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/atlas-annotation),
 [Docs](https://atlas-annotation.readthedocs.io).
@@ -55,6 +57,8 @@ for deforming the Nissl volume and the CCFv2 annotations in order to re-align
 them to CCFv3.
 
 ## Atlas Interpolation
+<img alt="Atlas Interpolation Banner" src="images/Atlas-Interpolation.jpg" width="600"/>
+
 Useful links:
 [GitHub repo](https://github.com/BlueBrain/atlas-interpolation),
 [Docs](https://atlas-interpolation.readthedocs.io).
