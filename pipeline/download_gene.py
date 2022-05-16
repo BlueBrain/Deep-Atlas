@@ -14,8 +14,8 @@
 """Script that download and postprocess ISH dataset from Allen Brain."""
 import argparse
 import logging
-import pathlib
 import sys
+from pathlib import Path
 
 import numpy as np
 import PIL
@@ -33,7 +33,20 @@ def parse_args():
         The parsed command line arguments.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("gene_name")
+    parser.add_argument(
+        "--gene-name",
+        type=str,
+        help="""\
+        Path to CCFv3 annotation volume.
+        """,
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="""\
+        Path to output directory to save results.
+        """,
+    )
     args = parser.parse_args()
 
     return args
@@ -82,7 +95,10 @@ def postprocess_dataset(dataset):
     return dataset_np, metadata_dict
 
 
-def main(gene_name: str) -> int:
+def main(
+    gene_name: str,
+    output_dir: Path | str | None = None,
+) -> int:
     """Download gene expression dataset."""
     # Imports
     import json
@@ -94,12 +110,16 @@ def main(gene_name: str) -> int:
     PIL.Image.MAX_IMAGE_PIXELS = 200000000
 
     # Download dataset on allen
+    if output_dir is None:
+        output_dir = Path(__file__).parent / "download-gene" / gene_name
+    else:
+        output_dir = Path(output_dir) / gene_name
+
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True)
+
     for axis in ['sagittal', 'coronal']:
 
-        file_dir = pathlib.Path(f"{axis}/{gene_name}/")
-        if not file_dir.exists():
-            file_dir.mkdir(parents=True)
-        
         experiment_list = get_experiment_list_from_gene(gene_name, axis)
         for experiment_id in experiment_list:
             dataset = download_dataset(experiment_id)
@@ -107,8 +127,8 @@ def main(gene_name: str) -> int:
             dataset_np, metadata_dict = postprocess_dataset(dataset)
             metadata_dict["axis"] = axis
 
-            np.save(file_dir / f"{experiment_id}.npy", dataset_np)
-            with open(file_dir / f"{experiment_id}.json", 'w') as f:
+            np.save(output_dir / f"{experiment_id}.npy", dataset_np)
+            with open(output_dir / f"{experiment_id}.json", 'w') as f:
                 json.dump(metadata_dict, f)
 
     return 0

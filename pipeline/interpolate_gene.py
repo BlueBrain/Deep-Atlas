@@ -66,10 +66,10 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--output-file",
+        "--output-dir",
         type=Path,
         help="""\
-        Path to save the resulting gene expression volume.
+        Path to directory where to save the resulting gene expression volume.
         """,
     )
     return parser.parse_args()
@@ -126,7 +126,7 @@ def main(
     interpolator_name: str,
     interpolator_checkpoint: str | Path,
     reference_path: str | Path,
-    output_file: Path | str | None,
+    output_dir: Path | str | None,
 ) -> int:
     """Implement main function."""
     import numpy as np
@@ -168,11 +168,15 @@ def main(
         )
         predicted_volume = gene_optical_flow.predict_volume()
 
-    if output_file:
-        np.save(output_file, predicted_volume)
+    gene_name = Path(gene_path).stem
+
+    if output_dir is None:
+        output_dir = Path(__file__).parent / "interpolate-gene"
     else:
-        gene_name = Path(gene_path).stem
-        np.save(f"interpolated-{gene_name}.npy", predicted_volume)
+        output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True)
+
+    np.save(output_dir / f"interpolated-{gene_name}.npy", predicted_volume)
 
     return 0
 
