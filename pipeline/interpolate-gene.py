@@ -42,6 +42,30 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "--interpolator-name",
+        type=str,
+        choices=("rife", "cain", "maskflownet", "raftnet"),
+        help="""\
+        Name of the interpolator model.
+        """,
+    )
+    parser.add_argument(
+        "--interpolator-checkpoint",
+        type=str,
+        help="""\
+        Path of the interpolator checkpoints.
+        """,
+    )
+    parser.add_argument(
+        "--reference-path",
+        type=Path,
+        help="""\
+        Path to the reference volume used for the optical flow prediction.
+        If interpolation model is "cain" or "rife", there is no need to 
+        specify a reference path.
+        """,
+    )
+    parser.add_argument(
         "--output-file",
         type=Path,
         help="""\
@@ -51,18 +75,63 @@ def parse_args():
     return parser.parse_args()
 
 
+def load_interpolator_model(interpolator_name: str, checkpoint: str | Path):
+
+    checkpoint = Path(checkpoint)
+    if not checkpoint.exists():
+        raise ValueError(f"The checkpoint path {checkpoint} does not exist.")
+
+    if interpolator_name == "rife":
+        from atlinter.pair_interpolation import RIFEPairInterpolationModel
+        from atlinter.vendor.rife.RIFE_HD import Model as RifeModel
+        from atlinter.vendor.rife.RIFE_HD import device as rife_device
+
+        rife_model = RifeModel()
+        rife_model.load_model(checkpoint, -1)
+        rife_model.eval()
+        model = RIFEPairInterpolationModel(rife_model, rife_device)
+
+    elif interpolator_name == "cain":
+        import torch
+
+        from atlinter.vendor.cain.cain import CAIN
+        from atlinter.pair_interpolation import CAINPairInterpolationModel
+
+        device = "cuda" if torch.cuda.is_available else "cpu"
+        cain_model = torch.nn.DataParallel(CAIN()).to(device)
+        cain_checkpoint = torch.load(checkpoint, map_location=device)
+        cain_model.load_state_dict(cain_checkpoint["state_dict"])
+        model = CAINPairInterpolationModel(cain_model)
+
+    elif interpolator_name == "maskflownet":
+        from atlinter.optical_flow import MaskFlowNet
+
+        model = MaskFlowNet(checkpoint)
+
+    elif interpolator_name == "raftnet":
+        from atlinter.optical_flow import RAFTNet
+
+        model = RAFTNet(checkpoint)
+
+    else:
+        raise ValueError(f"The interpolator model {interpolator_name} is not supported yet."
+                         f"Choices are: 'rife', 'cain', 'maskflownet', 'raftnet'")
+
+    return model
+
+
 def main(
     gene_path: Path | str,
     metadata_path: Path | str,
+    interpolator_name: str,
+    interpolator_checkpoint: str | Path,
+    reference_path: str | Path,
     output_file: Path | str | None,
 ) -> int:
     """Implement main function."""
     import numpy as np
 
     from atlinter.data import GeneDataset
-    from atlinter.pair_interpolation import GeneInterpolate, RIFEPairInterpolationModel
-    from atlinter.vendor.rife.RIFE_HD import Model as RifeModel
-    from atlinter.vendor.rife.RIFE_HD import device as rife_device
 
     logger.info("Loading Data...")
     section_images = np.load(gene_path)
@@ -81,17 +150,23 @@ def main(
     )
 
     logger.info("Loading interpolator model...")
-    checkpoint_path = "data/checkpoints/rife"
-    rife_model = RifeModel()
-    rife_model.load_model(checkpoint_path, -1)
-    rife_model.eval()
-    rife_interpolation_model = RIFEPairInterpolationModel(rife_model, rife_device)
+    interpolator_model = load_interpolator_model(
+        interpolator_name, interpolator_checkpoint
+    )
 
     # Create a gene interpolator
-    gene_interpolate = GeneInterpolate(gene_dataset, rife_interpolation_model)
-
     logger.info("Start interpolating the entire volume...")
-    predicted_volume = gene_interpolate.predict_volume()
+    if interpolator_name in {"cain", "rife"}:
+        from atlinter.pair_interpolation import GeneInterpolate
+        gene_interpolate = GeneInterpolate(gene_dataset, interpolator_model)
+        predicted_volume = gene_interpolate.predict_volume()
+    else:
+        from atlinter.optical_flow import GeneOpticalFlow
+        reference_volume = np.load(reference_path)
+        gene_optical_flow = GeneOpticalFlow(
+            gene_dataset, reference_volume, interpolator_model
+        )
+        predicted_volume = gene_optical_flow.predict_volume()
 
     if output_file:
         np.save(output_file, predicted_volume)
