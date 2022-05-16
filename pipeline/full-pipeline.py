@@ -115,13 +115,20 @@ def main(
     else:
         output_dir = Path(output_dir)
 
-    logger.info("Aligning Nissl volume to CCFv3 annotation volume...")
-    nissl_to_ccfv3_main(
-        nissl_path,
-        ccfv2_path,
-        ccfv3_path,
-        output_dir=output_dir / "nissl-to-ccfv3",
-    )
+    warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped_nissl.npy"
+    if not warped_nissl_path.exists():
+        logger.info("Aligning Nissl volume to CCFv3 annotation volume...")
+        nissl_to_ccfv3_main(
+            nissl_path,
+            ccfv2_path,
+            ccfv3_path,
+            output_dir=output_dir / "nissl-to-ccfv3",
+        )
+    else:
+        logger.info(
+            "Aligning Nissl volume to CCFv3 annotation volume: Skipped \n"
+            f"Nissl is already aligned and saved {warped_nissl_path}"
+        )
 
     logger.info("Downloading Gene Expression...")
     download_gene_main(gene_name, output_dir=output_dir / "download-gene")
@@ -135,7 +142,7 @@ def main(
         gene_to_nissl_main(
             gene_path=gene_experiment_path / f"{experiment}.npy",
             metadata_path=gene_experiment_path / f"{experiment}.json",
-            nissl_path=output_dir / "nissl-to-ccfv3" / "warped-nissl.npy",
+            nissl_path=warped_nissl_path,
             output_dir=output_dir / "gene-to-nissl" / gene_name,
         )
 
