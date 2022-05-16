@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Script that interpolates Gene Expression."""
+from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -50,9 +52,9 @@ def parse_args():
 
 
 def main(
-    gene_path: Path,
-    metadata_path: Path,
-    output_file: Path,
+    gene_path: Path | str,
+    metadata_path: Path | str,
+    output_file: Path | str | None,
 ) -> int:
     """Implement main function."""
     import numpy as np
@@ -94,7 +96,7 @@ def main(
     if output_file:
         np.save(output_file, predicted_volume)
     else:
-        gene_name = gene_path.stem
+        gene_name = Path(gene_path).stem
         np.save(f"interpolated-{gene_name}.npy", predicted_volume)
 
     return 0
