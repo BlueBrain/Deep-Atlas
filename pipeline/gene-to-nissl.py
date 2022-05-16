@@ -23,7 +23,6 @@ from pathlib import Path
 
 import numpy as np
 from skimage.color import rgb2gray
-from utils import get_results_dir
 
 from atlannot import load_volume
 from atlannot.ants import register, transform
@@ -44,10 +43,10 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--section-numbers",
+        "--metadata-path",
         type=Path,
         help="""\
-        Path to json containing section numbers of gene expression.
+        Path to json containing metadata of gene expression.
         """,
     )
     parser.add_argument(
@@ -56,6 +55,13 @@ def parse_args():
         default=DATA_FOLDER / "ara_nissl_25.nrrd",
         help="""\
         Path to Nissl Volume.
+        """,
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="""\
+        Path to directory where to save the results.
         """,
     )
     return parser.parse_args()
@@ -74,6 +80,7 @@ def check_and_load(path: pathlib.Path | str) -> np.array:
     volume : np.array
         Loaded volume.
     """
+    path = Path(path)
     if not path.exists():
         raise ValueError(f"The specified path {path} does not exist.")
 
@@ -133,17 +140,26 @@ def registration(
     return np.array(warped_genes)
 
 
-def main():
+def main(
+    gene_path: Path | str,
+    metadata_path: Path | str,
+    nissl_path: Path | str,
+    output_dir: Path | str | None,
+) -> int:
     """Implement main function."""
-    args = parse_args()
+    gene_path = Path(gene_path)
+    metadata_path = Path(metadata_path)
+    nissl_path = Path(nissl_path)
+    if output_dir is not None:
+        output_dir = Path(output_dir)
 
     logger.info("Loading volumes")
-    nissl = check_and_load(args.nissl_path)
-    genes = check_and_load(args.gene_path)
-    gene_experiment = args.gene_path.stem
-    gene_name = args.gene_path.parent.stem
+    nissl = check_and_load(nissl_path)
+    genes = check_and_load(gene_path)
+    gene_experiment = gene_path.stem
+    gene_name = gene_path.parent.stem
 
-    with open(args.section_numbers) as f:
+    with open(metadata_path) as f:
         json_dict = json.load(f)
 
     section_numbers = json_dict["section_numbers"]
@@ -169,14 +185,19 @@ def main():
     warped_genes = registration(nissl, genes, section_numbers)
 
     logger.info("Saving results...")
-    output_dir = get_results_dir() / "gene-to-nissl" / gene_name
+    if output_dir is None:
+        output_dir = Path(__file__).parent / "gene-to-nissl" / gene_name
     output_dir.mkdir(parents=True)
-    np.save(output_dir / f"{gene_experiment}_warped_gene", warped_genes)
+    np.save(output_dir / f"{gene_experiment}-warped-gene", warped_genes)
 
-    with open(output_dir / f"{gene_experiment}_section_numbers", "w") as f:
+    with open(output_dir / f"{gene_experiment}-section-numbers", "w") as f:
         json.dumps(json_dict)
+
+    return 0
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    sys.exit(main())
+    args = parse_args()
+    kwargs = vars(args)
+    sys.exit(main(**kwargs))

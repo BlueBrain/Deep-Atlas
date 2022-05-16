@@ -22,14 +22,11 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from utils import get_results_dir
 
 from atlannot import load_volume
 from atlannot.ants import register, transform
 
-# Initialize the logger
 logger = logging.getLogger("nissl-to-ccfv3")
-DATA_FOLDER = pathlib.Path(__file__).resolve().parent.parent / "data"
 
 
 def parse_args():
@@ -38,7 +35,6 @@ def parse_args():
     parser.add_argument(
         "--nissl-path",
         type=Path,
-        default=DATA_FOLDER / "ara_nissl_25.nrrd",
         help="""\
         Path to Nissl Volume.
         """,
@@ -46,7 +42,6 @@ def parse_args():
     parser.add_argument(
         "--ccfv2-path",
         type=Path,
-        default=DATA_FOLDER / "ccfv2_merged.nrrd",
         help="""\
         Path to CCFv2 annotation volume.
         """,
@@ -54,9 +49,15 @@ def parse_args():
     parser.add_argument(
         "--ccfv3-path",
         type=Path,
-        default=DATA_FOLDER / "ccfv3_merged.nrrd",
         help="""\
         Path to CCFv3 annotation volume.
+        """,
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="""\
+        Path to output directory to save results.
         """,
     )
     return parser.parse_args()
@@ -75,6 +76,7 @@ def check_and_load(path: pathlib.Path | str) -> np.array:
     volume : np.array
         Loaded volume.
     """
+    path = Path(path)
     if not path.exists():
         logger.error(f"The specified path {path} does not exist.")
         return 1
@@ -187,25 +189,35 @@ def registration(
     return warped_volume, nissl_warped
 
 
-def main():
+def main(
+    nissl_path: Path | str,
+    ccfv2_path: Path | str,
+    ccfv3_path: Path | str,
+    output_dir: Path | str | None,
+) -> int:
     """Implement main function."""
-    args = parse_args()
-
     logger.info("Loading volumes")
-    nissl = check_and_load(args.nissl_path)
-    ccfv2 = check_and_load(args.ccfv2_path)
-    ccfv3 = check_and_load(args.ccfv3_path)
+    nissl = check_and_load(nissl_path)
+    ccfv2 = check_and_load(ccfv2_path)
+    ccfv3 = check_and_load(ccfv3_path)
+    if output_dir is not None:
+        output_dir = Path(output_dir)
 
     logger.info("Start registration...")
     warped_atlas, warped_nissl = registration(ccfv3, ccfv2, nissl)
 
     logger.info("Saving results...")
-    output_dir = get_results_dir() / "nissl-to-ccfv3"
+    if output_dir is None:
+        output_dir = Path(__file__).parent / "nissl-to-ccfv3"
     output_dir.mkdir(parents=True)
-    np.save(output_dir / "warped_ccfv2", warped_atlas)
-    np.save(output_dir / "warped_nissl", warped_nissl)
+    np.save(output_dir / "warped-ccfv2", warped_atlas)
+    np.save(output_dir / "warped-nissl", warped_nissl)
+
+    return 0
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    sys.exit(main())
+    args = parse_args()
+    kwargs = vars(args)
+    sys.exit(main(**kwargs))

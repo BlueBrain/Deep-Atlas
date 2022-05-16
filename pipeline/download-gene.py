@@ -82,7 +82,7 @@ def postprocess_dataset(dataset):
     return dataset_np, metadata_dict
 
 
-def main():
+def main(gene_name: str) -> int:
     """Download gene expression dataset."""
     # Imports
     import json
@@ -90,19 +90,17 @@ def main():
     from atldld.sync import download_dataset
     from atldld.utils import CommonQueries, get_experiment_list_from_gene
 
-    args = parse_args()
-    gene = args.gene_name
     # To avoid Decompression Warning
     PIL.Image.MAX_IMAGE_PIXELS = 200000000
 
     # Download dataset on allen
     for axis in ['sagittal', 'coronal']:
 
-        file_dir = pathlib.Path(f"{axis}/{gene}/")
+        file_dir = pathlib.Path(f"{axis}/{gene_name}/")
         if not file_dir.exists():
             file_dir.mkdir(parents=True)
         
-        experiment_list = get_experiment_list_from_gene(gene, axis)
+        experiment_list = get_experiment_list_from_gene(gene_name, axis)
         for experiment_id in experiment_list:
             dataset = download_dataset(experiment_id)
             axis = CommonQueries.get_axis(experiment_id)
@@ -113,7 +111,11 @@ def main():
             with open(file_dir / f"{experiment_id}.json", 'w') as f:
                 json.dump(metadata_dict, f)
 
+    return 0
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    sys.exit(main())
+    args = parse_args()
+    kwargs = vars(args)
+    sys.exit(main(**kwargs))

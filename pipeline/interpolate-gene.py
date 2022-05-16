@@ -33,10 +33,10 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--section-numbers",
+        "--metadata-path",
         type=Path,
         help="""\
-        Path to json containing section numbers of gene expression.
+        Path to json containing metadata of gene expression.
         """,
     )
     parser.add_argument(
@@ -49,8 +49,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    """Main function."""
+def main(
+    gene_path: Path,
+    metadata_path: Path,
+    output_file: Path,
+) -> int:
+    """Implement main function."""
     import numpy as np
 
     from atlinter.data import GeneDataset
@@ -58,14 +62,9 @@ def main():
     from atlinter.vendor.rife.RIFE_HD import Model as RifeModel
     from atlinter.vendor.rife.RIFE_HD import device as rife_device
 
-    args = parse_args()
-
     logger.info("Loading Data...")
-    data_path = args.gene_path
-    data_json = args.section_numbers
-
-    section_images = np.load(data_path)
-    with open(data_json) as fh:
+    section_images = np.load(gene_path)
+    with open(metadata_path) as fh:
         metadata = json.load(fh)
 
     section_numbers = [int(s) for s in metadata["section_numbers"]]
@@ -89,18 +88,20 @@ def main():
     # Create a gene interpolator
     gene_interpolate = GeneInterpolate(gene_dataset, rife_interpolation_model)
 
-    # Reconstruct the whole volume. This might take some time.
+    logger.info("Start interpolating the entire volume...")
     predicted_volume = gene_interpolate.predict_volume()
 
-    if args.output_file:
-        np.save(args.output_file, predicted_volume)
+    if output_file:
+        np.save(output_file, predicted_volume)
     else:
-        gene_name = args.gene_path.stem
-        np.save(f"interpolated_{gene_name}.npy", predicted_volume)
+        gene_name = gene_path.stem
+        np.save(f"interpolated-{gene_name}.npy", predicted_volume)
 
     return 0
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    sys.exit(main())
+    args = parse_args()
+    kwargs = vars(args)
+    sys.exit(main(**kwargs))
