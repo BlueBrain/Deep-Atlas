@@ -121,7 +121,7 @@ def load_interpolator_model(interpolator_name: str, checkpoint: str | Path):
     else:
         raise ValueError(
             f"The interpolator model {interpolator_name} is not supported yet."
-            f"Choices are: 'rife', 'cain', 'maskflownet', 'raftnet'"
+            f"Choices are: 'rife', 'cain', 'maskflownet', 'raftnet', 'linear'"
         )
 
     return model
