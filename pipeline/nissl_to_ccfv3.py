@@ -209,7 +209,7 @@ def main(
     logger.info("Saving results...")
     if output_dir is None:
         output_dir = Path(__file__).parent / "nissl-to-ccfv3"
-    output_dir.mkdir(parents=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / "warped-ccfv2", warped_atlas)
     np.save(output_dir / "warped-nissl", warped_nissl)
 

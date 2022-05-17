@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument(
         "--interpolator-name",
         type=str,
-        choices=("rife", "cain", "maskflownet", "raftnet"),
+        choices=("linear", "rife", "cain", "maskflownet", "raftnet"),
         help="""\
         Name of the interpolator model.
         """,
@@ -102,6 +102,11 @@ def load_interpolator_model(interpolator_name: str, checkpoint: str | Path):
         cain_checkpoint = torch.load(checkpoint, map_location=device)
         cain_model.load_state_dict(cain_checkpoint["state_dict"])
         model = CAINPairInterpolationModel(cain_model)
+
+    elif interpolator_name == "linear":
+        from atlinter.pair_interpolation import LinearPairInterpolationModel
+
+        model = LinearPairInterpolationModel()
 
     elif interpolator_name == "maskflownet":
         from atlinter.optical_flow import MaskFlowNet
@@ -180,7 +185,7 @@ def main(
         output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    np.save(output_dir / f"{gene_name}-interpolated-gene.npy", predicted_volume)
+    np.save(output_dir / f"{gene_name}-{interpolator_name}-interpolated-gene.npy", predicted_volume)
 
     return 0
 

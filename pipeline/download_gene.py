@@ -67,6 +67,8 @@ def postprocess_dataset(dataset):
     -------
     dataset_np : np.ndarray
         Array containing gene expressions of the dataset.
+    expression_np : np.ndarray
+        Array containing image expression of the dataset.
     metadata_dict : dict
         Dictionary containing metadata of the dataset.
         Keys are section numbers and image ids.
@@ -74,7 +76,7 @@ def postprocess_dataset(dataset):
     metadata_dict = {}
     section_numbers = []
     image_ids = []
-    img_expressions = []
+    expression_np = []
     dataset_np = []
 
     for img_id, section_coordinate, img, img_expression, df in dataset:
@@ -86,18 +88,19 @@ def postprocess_dataset(dataset):
 
         section_numbers.append(section_coordinate // 25)
         image_ids.append(img_id)
-        warped_img = df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
-        img_expressions.append(img_expression)
+        warped_img = 255 - df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
+        warped_exp = df.warp(img_expression, border_mode="constant", c=img[255, 255, :].tolist())
         dataset_np.append(warped_img)
+        expression_np.append(warped_exp)
 
     dataset_np = np.array(dataset_np)
-    img_expressions = np.array(img_expressions)
+    expression_np = np.array(expression_np)
 
     metadata_dict["section_numbers"] = section_numbers
     metadata_dict["image_ids"] = image_ids
     metadata_dict["image_shape"] = warped_img.shape
 
-    return dataset_np, img_expressions, metadata_dict
+    return dataset_np, expression_np, metadata_dict
 
 
 def main(
@@ -131,12 +134,12 @@ def main(
             dataset.fetch_metadata()
             dataset_gen = dataset.run()
             axis = CommonQueries.get_axis(experiment_id)
-            dataset_np, img_expressions, metadata_dict = postprocess_dataset(
+            dataset_np, expression_np, metadata_dict = postprocess_dataset(
                 dataset_gen
             )
             metadata_dict["axis"] = axis
 
-            np.save(output_dir / f"{experiment_id}-expression.npy", img_expressions)
+            np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
             np.save(output_dir / f"{experiment_id}.npy", dataset_np)
             with open(output_dir / f"{experiment_id}.json", "w") as f:
                 json.dump(metadata_dict, f)
