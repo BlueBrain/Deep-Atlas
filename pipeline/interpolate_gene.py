@@ -114,8 +114,10 @@ def load_interpolator_model(interpolator_name: str, checkpoint: str | Path):
         model = RAFTNet(checkpoint)
 
     else:
-        raise ValueError(f"The interpolator model {interpolator_name} is not supported yet."
-                         f"Choices are: 'rife', 'cain', 'maskflownet', 'raftnet'")
+        raise ValueError(
+            f"The interpolator model {interpolator_name} is not supported yet."
+            f"Choices are: 'rife', 'cain', 'maskflownet', 'raftnet'"
+        )
 
     return model
 
@@ -126,7 +128,7 @@ def main(
     interpolator_name: str,
     interpolator_checkpoint: str | Path,
     reference_path: str | Path,
-    output_dir: Path | str | None,
+    output_dir: Path | str | None = None,
 ) -> int:
     """Implement main function."""
     import numpy as np
@@ -143,10 +145,10 @@ def main(
 
     # Wrap the data into a GeneDataset class
     gene_dataset = GeneDataset(
-      section_images,
-      section_numbers,
-      volume_shape=(528, 320, 456, 3),
-      axis=axis,
+        section_images,
+        section_numbers,
+        volume_shape=(528, 320, 456, 3),
+        axis=axis,
     )
 
     logger.info("Loading interpolator model...")
@@ -158,10 +160,12 @@ def main(
     logger.info("Start interpolating the entire volume...")
     if interpolator_name in {"cain", "rife"}:
         from atlinter.pair_interpolation import GeneInterpolate
+
         gene_interpolate = GeneInterpolate(gene_dataset, interpolator_model)
         predicted_volume = gene_interpolate.predict_volume()
     else:
         from atlinter.optical_flow import GeneOpticalFlow
+
         reference_volume = np.load(reference_path)
         gene_optical_flow = GeneOpticalFlow(
             gene_dataset, reference_volume, interpolator_model
@@ -174,9 +178,9 @@ def main(
         output_dir = Path(__file__).parent / "interpolate-gene"
     else:
         output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    np.save(output_dir / f"interpolated-{gene_name}.npy", predicted_volume)
+    np.save(output_dir / f"{gene_name}-interpolated-gene.npy", predicted_volume)
 
     return 0
 

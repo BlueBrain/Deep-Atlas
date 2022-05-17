@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Script that download and postprocess ISH dataset from Allen Brain."""
+from __future__ import annotations
+
 import argparse
 import logging
 import sys
@@ -72,9 +74,10 @@ def postprocess_dataset(dataset):
     metadata_dict = {}
     section_numbers = []
     image_ids = []
+    img_expressions = []
     dataset_np = []
 
-    for img_id, section_coordinate, img, df in dataset:
+    for img_id, section_coordinate, img, img_expression, df in dataset:
         if section_coordinate is None:
             # In `atldld.sync.download_dataset` if there is a problem during the download
             # the generator returns `(img_id, None, None, None, None)
@@ -84,15 +87,17 @@ def postprocess_dataset(dataset):
         section_numbers.append(section_coordinate // 25)
         image_ids.append(img_id)
         warped_img = df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
+        img_expressions.append(img_expression)
         dataset_np.append(warped_img)
 
     dataset_np = np.array(dataset_np)
+    img_expressions = np.array(img_expressions)
 
     metadata_dict["section_numbers"] = section_numbers
     metadata_dict["image_ids"] = image_ids
     metadata_dict["image_shape"] = warped_img.shape
 
-    return dataset_np, metadata_dict
+    return dataset_np, img_expressions, metadata_dict
 
 
 def main(
@@ -103,7 +108,7 @@ def main(
     # Imports
     import json
 
-    from atldld.sync import download_dataset
+    from atldld.sync import DatasetDownloader
     from atldld.utils import CommonQueries, get_experiment_list_from_gene
 
     # To avoid Decompression Warning
@@ -118,17 +123,22 @@ def main(
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
 
-    for axis in ['sagittal', 'coronal']:
+    for axis in ["sagittal", "coronal"]:
 
         experiment_list = get_experiment_list_from_gene(gene_name, axis)
         for experiment_id in experiment_list:
-            dataset = download_dataset(experiment_id)
+            dataset = DatasetDownloader(experiment_id, include_expression=True)
+            dataset.fetch_metadata()
+            dataset_gen = dataset.run()
             axis = CommonQueries.get_axis(experiment_id)
-            dataset_np, metadata_dict = postprocess_dataset(dataset)
+            dataset_np, img_expressions, metadata_dict = postprocess_dataset(
+                dataset_gen
+            )
             metadata_dict["axis"] = axis
 
+            np.save(output_dir / f"{experiment_id}-expression.npy", img_expressions)
             np.save(output_dir / f"{experiment_id}.npy", dataset_np)
-            with open(output_dir / f"{experiment_id}.json", 'w') as f:
+            with open(output_dir / f"{experiment_id}.json", "w") as f:
                 json.dump(metadata_dict, f)
 
     return 0

@@ -19,6 +19,8 @@ import logging
 import sys
 from pathlib import Path
 
+from atldld.utils import get_experiment_list_from_gene
+
 logger = logging.getLogger("full-pipeline")
 
 
@@ -91,7 +93,50 @@ def parse_args():
         Path to directory where to save the results.
         """,
     )
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="""\
+        If True, force to recompute every steps.
+        """,
+    )
     return parser.parse_args()
+
+
+def get_experiments_list_to_run(
+    gene_name: str,
+    experiment_path: Path | str,
+    force: bool,
+) -> set[int]:
+    """Returns the set of experiments still to be runned.
+
+    Parameters
+    ----------
+    gene_name
+        Name of the gene to experiment.
+    experiment_path
+        Path where the results of the given experiment are saved.
+    force
+        If force is True, all the experiments are going to be returned
+        even if some paths already exist.
+
+    Returns
+    -------
+    experiments_list: set[int]
+        Set of experiments IDs to run.
+    """
+    experiments_ids = get_experiment_list_from_gene(gene_name, "coronal")
+    experiments_ids.extend(get_experiment_list_from_gene(gene_name, "sagittal"))
+
+    if not Path(experiment_path).exists() or force:
+        return set(experiments_ids)
+
+    experiments_results = {
+        int(filename.stem.split("-")[0]) for filename in experiment_path.iterdir()
+    }
+    experiments_list = set(experiments_ids) - experiments_results
+    return experiments_list
 
 
 def main(
@@ -101,8 +146,9 @@ def main(
     gene_name: str,
     interpolator_name: str,
     interpolator_checkpoint: Path | str,
-    output_dir: Path | str | None,
+    output_dir: Path | str | None = None,
     reference_path: str | None = None,
+    force: bool = False,
 ) -> int:
     """Implement the main function."""
     from download_gene import main as download_gene_main
@@ -115,8 +161,8 @@ def main(
     else:
         output_dir = Path(output_dir)
 
-    warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped_nissl.npy"
-    if not warped_nissl_path.exists():
+    warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped-nissl.npy"
+    if not warped_nissl_path.exists() or force:
         logger.info("Aligning Nissl volume to CCFv3 annotation volume...")
         nissl_to_ccfv3_main(
             nissl_path,
@@ -127,37 +173,51 @@ def main(
     else:
         logger.info(
             "Aligning Nissl volume to CCFv3 annotation volume: Skipped \n"
-            f"Nissl is already aligned and saved {warped_nissl_path}"
+            f"Nissl is already aligned and saved under {warped_nissl_path}"
         )
 
-    logger.info("Downloading Gene Expression...")
-    download_gene_main(gene_name, output_dir=output_dir / "download-gene")
-
     gene_experiment_path = output_dir / "download-gene" / gene_name
-    experiments_results = {filename.stem for filename in gene_experiment_path.iterdir()}
-
-    logger.info("Aligning downloaded Gene Expression to new Nissl volume...")
-    for experiment in experiments_results:
-        logger.info(f"Aligning Gene Expression Experiment {experiment} to new Nissl volume...")
-        gene_to_nissl_main(
-            gene_path=gene_experiment_path / f"{experiment}.npy",
-            metadata_path=gene_experiment_path / f"{experiment}.json",
-            nissl_path=warped_nissl_path,
-            output_dir=output_dir / "gene-to-nissl" / gene_name,
+    if not gene_experiment_path.exists() or force:
+        logger.info("Downloading Gene Expression...")
+        download_gene_main(gene_name, output_dir=output_dir / "download-gene")
+    else:
+        logger.info(
+            "Downloading Gene Expression: Skipped \n"
+            f"{gene_name} is already downloaded and saved under {gene_experiment_path}"
         )
 
     aligned_gene_path = output_dir / "gene-to-nissl" / gene_name
-    experiments_results = {filename.stem for filename in aligned_gene_path.iterdir()}
-    logger.info("Interpolating the missing slices of the gene expression...")
-    for experiment in experiments_results:
-        interpolate_gene_main(
-            gene_path=aligned_gene_path / f"{experiment}.npy",
-            metadata_path=aligned_gene_path / f"{experiment}.json",
-            interpolator_name=interpolator_name,
-            interpolator_checkpoint=interpolator_checkpoint,
-            reference_path=reference_path,
-            output_dir=output_dir / "interpolate-gene" / gene_name,
-        )
+    experiments_list = get_experiments_list_to_run(gene_name, aligned_gene_path, force)
+    if experiments_list:
+        logger.info("Aligning downloaded Gene Expression to new Nissl volume...")
+        for experiment in experiments_list:
+            logger.info(
+                f"Aligning Gene Expression Experiment {experiment} to new Nissl volume..."
+            )
+            gene_to_nissl_main(
+                gene_path=gene_experiment_path / f"{experiment}.npy",
+                metadata_path=gene_experiment_path / f"{experiment}.json",
+                nissl_path=warped_nissl_path,
+                output_dir=aligned_gene_path,
+            )
+    else:
+        logger.info("Aligning downloaded Gene Expression to new Nissl volume: Skipped")
+
+    interpolated_gene_path = output_dir / "interpolate-gene" / gene_name
+    experiments_list = get_experiments_list_to_run(
+        gene_name, interpolated_gene_path, force
+    )
+    if experiments_list:
+        logger.info("Interpolating the missing slices of the gene expression...")
+        for experiment in experiments_list:
+            interpolate_gene_main(
+                gene_path=aligned_gene_path / f"{experiment}-warped-gene.npy",
+                metadata_path=aligned_gene_path / f"{experiment}-section-numbers.json",
+                interpolator_name=interpolator_name,
+                interpolator_checkpoint=interpolator_checkpoint,
+                reference_path=reference_path,
+                output_dir=interpolated_gene_path,
+            )
 
     return 0
 

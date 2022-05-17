@@ -193,7 +193,7 @@ def main(
     nissl_path: Path | str,
     ccfv2_path: Path | str,
     ccfv3_path: Path | str,
-    output_dir: Path | str | None,
+    output_dir: Path | str | None = None,
 ) -> int:
     """Implement main function."""
     logger.info("Loading volumes")

@@ -21,10 +21,10 @@ import pathlib
 import sys
 from pathlib import Path
 
+import nrrd
 import numpy as np
 from skimage.color import rgb2gray
 
-from atlannot import load_volume
 from atlannot.ants import register, transform
 
 # Initialize the logger
@@ -67,25 +67,40 @@ def parse_args():
     return parser.parse_args()
 
 
-def check_and_load(path: pathlib.Path | str) -> np.array:
+def check_and_load(volume_path: pathlib.Path | str, normalize: bool = True) -> np.array:
     """Load volume if path exists.
 
     Parameters
     ----------
-    path
+    volume_path
         File path.
+    normalize
+        If True, normalize the image between 0 and 1.
+        Otherwise, keep the raw values.
 
     Returns
     -------
     volume : np.array
         Loaded volume.
     """
-    path = Path(path)
-    if not path.exists():
-        raise ValueError(f"The specified path {path} does not exist.")
+    volume_path = Path(volume_path)
+    if not volume_path.exists():
+        raise ValueError(f"The specified path {volume_path} does not exist.")
 
-    volume = load_volume(path, normalize=False)
-    return volume.astype(np.float32)
+    if volume_path.suffix == ".nrrd":
+        img, header = nrrd.read(volume_path)
+
+    elif volume_path.suffix == ".npy":
+        img = np.load(volume_path)
+
+    else:
+        raise ValueError(f"The extension {volume_path.suffix} is not supported.")
+
+    img = img.astype(np.float32)
+    if normalize:
+        img = (img - img.min()) / (img.max() - img.min())
+
+    return img
 
 
 def registration(
@@ -144,7 +159,7 @@ def main(
     gene_path: Path | str,
     metadata_path: Path | str,
     nissl_path: Path | str,
-    output_dir: Path | str | None,
+    output_dir: Path | str | None = None,
 ) -> int:
     """Implement main function."""
     gene_path = Path(gene_path)
@@ -187,11 +202,11 @@ def main(
     logger.info("Saving results...")
     if output_dir is None:
         output_dir = Path(__file__).parent / "gene-to-nissl" / gene_name
-    output_dir.mkdir(parents=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / f"{gene_experiment}-warped-gene", warped_genes)
 
-    with open(output_dir / f"{gene_experiment}-section-numbers", "w") as f:
-        json.dumps(json_dict)
+    with open(output_dir / f"{gene_experiment}-section-numbers.json", "w") as f:
+        json.dump(json_dict, f)
 
     return 0
 
