@@ -177,7 +177,7 @@ def main(
         )
         predicted_volume = gene_optical_flow.predict_volume()
 
-    gene_name = Path(gene_path).stem
+    gene_name = Path(gene_path).stem.split("-")[0]
 
     if output_dir is None:
         output_dir = Path(__file__).parent / "interpolate-gene"
@@ -185,7 +185,10 @@ def main(
         output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    np.save(output_dir / f"{gene_name}-{interpolator_name}-interpolated-gene.npy", predicted_volume)
+    np.save(
+        output_dir / f"{gene_name}-{interpolator_name}-interpolated-gene.npy",
+        predicted_volume,
+    )
 
     return 0
 

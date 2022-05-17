@@ -89,7 +89,9 @@ def postprocess_dataset(dataset):
         section_numbers.append(section_coordinate // 25)
         image_ids.append(img_id)
         warped_img = 255 - df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
-        warped_exp = df.warp(img_expression, border_mode="constant", c=img[255, 255, :].tolist())
+        warped_exp = df.warp(
+            img_expression, border_mode="constant", c=img[255, 255, :].tolist()
+        )
         dataset_np.append(warped_img)
         expression_np.append(warped_exp)
 
@@ -134,9 +136,7 @@ def main(
             dataset.fetch_metadata()
             dataset_gen = dataset.run()
             axis = CommonQueries.get_axis(experiment_id)
-            dataset_np, expression_np, metadata_dict = postprocess_dataset(
-                dataset_gen
-            )
+            dataset_np, expression_np, metadata_dict = postprocess_dataset(dataset_gen)
             metadata_dict["axis"] = axis
 
             np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)

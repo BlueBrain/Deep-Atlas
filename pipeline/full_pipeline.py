@@ -207,6 +207,7 @@ def main(
     experiments_list = get_experiments_list_to_run(
         gene_name, interpolated_gene_path, force
     )
+    print(experiments_list)
     if experiments_list:
         logger.info("Interpolating the missing slices of the gene expression...")
         for experiment in experiments_list:
