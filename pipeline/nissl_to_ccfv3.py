@@ -86,39 +86,7 @@ def check_and_load(path: pathlib.Path | str) -> np.ndarray:
         raise ValueError(f"The specified path {path} does not exist.")
 
     volume = load_volume(path, normalize=False)
-    return volume.astype(np.float32)
-
-
-def slice_registration(
-    fixed: np.ndarray, moving: np.ndarray, nissl_slice: np.ndarray | None = None
-) -> tuple[np.ndarray, np.ndarray | None]:
-    """Compute registration transform between a couple of slices.
-
-    Parameters
-    ----------
-    fixed
-        Fixed slice of shape (h, w) of type annotation.
-    moving
-        Moving slice of shape (h, w) of type annotation.
-    nissl_slice
-        If needed, intensity slice of shape (h, w)  in the same coordinate
-        system as moving.
-
-    Returns
-    -------
-    warped : np.ndarray
-        Warped slice of type annotation.
-    nissl_slice : np.ndarray | None
-        If a nissl slice is specified, the given slice is warped with the
-        same transformation.
-    """
-    nii_data = register(fixed, moving, is_atlas=True)
-    warped = transform(moving, nii_data, interpolator="genericLabel")
-
-    if nissl_slice is not None:
-        nissl_slice = transform(nissl_slice, nii_data)
-
-    return warped, nissl_slice
+    return volume
 
 
 def registration(
@@ -126,21 +94,12 @@ def registration(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Compute registration between a moving volume and reference one.
 
-    The registration is computed in two steps:
-    1. First between one slice of the moving volume and the neighbouring slice
-    (To reduce the jaggedness)
-    2. Once the first registration is done, the transformation between the
-    resulting slice and the corresponding slice of the reference volume is
-    applied. (To make moving and reference more similar)
-    The registration is computed from the center of the volume to the two
-    extremities.
-
     Parameters
     ----------
     reference_volume
-        Reference volume.
+        Reference volume of annotation type.
     moving_volume
-        Moving volume of the same shape as the moving_volume.
+        Moving volume (annotation) of the same shape as the moving_volume.
     nissl_volume
         Nissl volume to register. It has to have same shape as reference_volume
         and moving_volume and be from the same coordinate system as the moving
@@ -153,43 +112,29 @@ def registration(
     nissl_warped : np.ndarray
         Nissl volume once the registration transformation are applied.
     """
-    warped_volume = np.zeros_like(moving_volume)
-    nissl_warped = np.zeros_like(nissl_volume)
-    total_n_iterations = moving_volume.shape[0]
-    n_iterations = int(total_n_iterations / 2)
+    from atlannot.utils import remap_labels
+    logger.info("Remap labels of the atlases...")
+    images_list, labels_mapping = remap_labels([reference_volume, moving_volume])
+    reference_volume, moving_volume = images_list
 
-    fixed = moving_volume[n_iterations, :, :]
-    for i in range(n_iterations):  # 0 -> 263
-        index = n_iterations - (i + 1)
-        warped = moving_volume[index]
-        fixed_ref = reference_volume[index]
-        nissl_slice = nissl_volume[index]
+    logger.info("Compute the registration...")
+    nii_data = register(
+        reference_volume.astype(np.float32), moving_volume.astype(np.float32)
+    )
 
-        warped, nissl_slice = slice_registration(fixed, warped, nissl_slice)
-        warped, nissl_slice = slice_registration(fixed_ref, warped, nissl_slice)
+    logger.info("Apply transformation to Moving Volume...")
+    warped_volume = transform(
+        moving_volume.astype(np.float32), nii_data, interpolator="genericLabel"
+    )
 
-        fixed = warped
-        warped_volume[index] = warped
-        nissl_warped[index] = nissl_slice
+    logger.info("Remap the warped volume to original labels...")
+    warped_temp = np.zeros_like(warped_volume)
+    for before, after in labels_mapping.items():
+        warped_temp[warped_volume == after] = before
+    warped_volume = warped_temp
 
-        if i % 5 == 0:
-            logger.info(f"{i + 1} / {total_n_iterations} registrations done")
-
-    fixed = moving_volume[n_iterations - 1]
-    for i in range(n_iterations - 1, total_n_iterations - 1):
-        warped = moving_volume[i + 1]
-        fixed_ref = reference_volume[i + 1]
-        nissl_slice = nissl_volume[i + 1]
-
-        warped, nissl_slice = slice_registration(fixed, warped, nissl_slice)
-        warped, nissl_slice = slice_registration(fixed_ref, warped, nissl_slice)
-
-        fixed = warped
-        warped_volume[i + 1] = warped  # 264 -> 527
-        nissl_warped[i + 1] = nissl_slice
-
-        if i % 5 == 0:
-            logger.info(f"{i + 1} / {total_n_iterations} registrations done")
+    logger.info("Apply transformation to Nissl Volume...")
+    nissl_warped = transform(nissl_volume.astype(np.float32), nii_data)
 
     return warped_volume, nissl_warped
 
