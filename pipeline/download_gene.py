@@ -39,14 +39,14 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "gene-name",
+        "gene_name",
         type=str,
         help="""\
         Name of the gene to download.
         """,
     )
     parser.add_argument(
-        "output-dir",
+        "output_dir",
         type=Path,
         help="""\
         Path to output directory to save results.
@@ -70,15 +70,20 @@ def postprocess_dataset(
         Tuple[int, float, np.ndarray, Optional[np.ndarray], DisplacementField],
         None,
         None,
-    ]
+    ],
+    n_images: int,
 ) -> Tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     """Post process given dataset.
 
     Parameters
     ----------
-    dataset : iterable
+    dataset
         List containing dataset, each element being tuple
         (img_id, section_coordinate, img, img_expression, df)
+
+    n_images
+        The overall number of slices we are going to download.
+        Needs to be passed separately since the `dataset` is a generator.
 
     Returns
     -------
@@ -95,8 +100,6 @@ def postprocess_dataset(
     image_ids = []
     expression_np = []
     dataset_np = []
-
-    n_images = len(dataset)
 
     for img_id, section_coordinate, img, img_expression, df in tqdm(
         dataset, total=n_images
@@ -157,7 +160,8 @@ def main(
             dataset.fetch_metadata()
             dataset_gen = dataset.run()
             axis = CommonQueries.get_axis(experiment_id)
-            dataset_np, expression_np, metadata_dict = postprocess_dataset(dataset_gen)
+            dataset_np, expression_np, metadata_dict = postprocess_dataset(
+                dataset_gen, len(dataset))
             metadata_dict["axis"] = axis
 
             np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
