@@ -80,7 +80,6 @@ def postprocess_dataset(
     dataset
         List containing dataset, each element being tuple
         (img_id, section_coordinate, img, img_expression, df)
-
     n_images
         The overall number of slices we are going to download.
         Needs to be passed separately since the `dataset` is a generator.
@@ -134,7 +133,18 @@ def main(
     output_dir: Path | str,
     downsample_img: int,
 ) -> int:
-    """Download gene expression dataset."""
+    """Download gene expression dataset.
+
+    Parameters
+    ----------
+    gene_name
+        Gene name to download.
+    output_dir
+        Directory when results are going to be saved.
+    downsample_img
+        Downsampling factor given to Allen API when downloading the images.
+        This factor is going to reduce the size.
+    """
     # Imports
     import json
 
@@ -153,7 +163,9 @@ def main(
     for axis in ["sagittal", "coronal"]:
 
         experiment_list = get_experiment_list_from_gene(gene_name, axis)
+        logger.info(f"{gene_name} have {len(experiment_list)} for {axis} axis")
         for experiment_id in experiment_list:
+            logger.info(f"Start downloading experiment ID {experiment_id}")
             dataset = DatasetDownloader(
                 experiment_id, downsample_img=downsample_img, include_expression=True
             )
@@ -164,6 +176,7 @@ def main(
                 dataset_gen, len(dataset))
             metadata_dict["axis"] = axis
 
+            logger.info(f"Saving results of experiment ID {experiment_id}")
             np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
             np.save(output_dir / f"{experiment_id}.npy", dataset_np)
             with open(output_dir / f"{experiment_id}.json", "w") as f:
