@@ -167,7 +167,7 @@ def main(
             np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
             np.save(output_dir / f"{experiment_id}.npy", dataset_np)
             with open(output_dir / f"{experiment_id}.json", "w") as f:
-                json.dump(metadata_dict, f)
+                json.dump(metadata_dict, f, indent=True, sort_keys=True)
 
     return 0
 
