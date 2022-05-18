@@ -1,4 +1,3 @@
-atlalign
 git+https://github.com/BlueBrain/atlas-annotation@main
 atldld
 git+https://github.com/BlueBrain/atlas-interpolation@main
@@ -6,3 +5,4 @@ numpy
 pillow
 pynrrd
 scikit-image
+tqdm

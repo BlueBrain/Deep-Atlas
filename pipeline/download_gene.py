@@ -17,10 +17,13 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from tqdm import tqdm
 from pathlib import Path
+from typing import Any, Generator, Optional, Tuple
 
 import numpy as np
 import PIL
+from atldld.base import DisplacementField
 
 
 logger = logging.getLogger("download-gene")
@@ -36,17 +39,25 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--gene-name",
+        "gene-name",
         type=str,
         help="""\
-        Path to CCFv3 annotation volume.
+        Name of the gene to download.
         """,
     )
     parser.add_argument(
-        "--output-dir",
+        "output-dir",
         type=Path,
         help="""\
         Path to output directory to save results.
+        """,
+    )
+    parser.add_argument(
+        "--downsample-img",
+        type=int,
+        default=0,
+        help="""\
+        Factor of downsampling of the images when downloading them.
         """,
     )
     args = parser.parse_args()
@@ -54,14 +65,20 @@ def parse_args():
     return args
 
 
-def postprocess_dataset(dataset):
+def postprocess_dataset(
+    dataset: Generator[
+        Tuple[int, float, np.ndarray, Optional[np.ndarray], DisplacementField],
+        None,
+        None,
+    ]
+) -> Tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     """Post process given dataset.
 
     Parameters
     ----------
     dataset : iterable
         List containing dataset, each element being tuple
-        (img_id, section_coordinate, img, df)
+        (img_id, section_coordinate, img, img_expression, df)
 
     Returns
     -------
@@ -79,7 +96,11 @@ def postprocess_dataset(dataset):
     expression_np = []
     dataset_np = []
 
-    for img_id, section_coordinate, img, img_expression, df in dataset:
+    n_images = len(dataset)
+
+    for img_id, section_coordinate, img, img_expression, df in tqdm(
+        dataset, total=n_images
+    ):
         if section_coordinate is None:
             # In `atldld.sync.download_dataset` if there is a problem during the download
             # the generator returns `(img_id, None, None, None, None)
@@ -107,7 +128,8 @@ def postprocess_dataset(dataset):
 
 def main(
     gene_name: str,
-    output_dir: Path | str | None = None,
+    output_dir: Path | str,
+    downsample_img: int,
 ) -> int:
     """Download gene expression dataset."""
     # Imports
@@ -120,10 +142,7 @@ def main(
     PIL.Image.MAX_IMAGE_PIXELS = 200000000
 
     # Download dataset on allen
-    if output_dir is None:
-        output_dir = Path(__file__).parent / "download-gene" / gene_name
-    else:
-        output_dir = Path(output_dir) / gene_name
+    output_dir = Path(output_dir) / gene_name
 
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
@@ -132,7 +151,9 @@ def main(
 
         experiment_list = get_experiment_list_from_gene(gene_name, axis)
         for experiment_id in experiment_list:
-            dataset = DatasetDownloader(experiment_id, include_expression=True)
+            dataset = DatasetDownloader(
+                experiment_id, downsample_img=downsample_img, include_expression=True
+            )
             dataset.fetch_metadata()
             dataset_gen = dataset.run()
             axis = CommonQueries.get_axis(experiment_id)
