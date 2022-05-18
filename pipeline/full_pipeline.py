@@ -35,28 +35,28 @@ def parse_args():
     """Parse arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--nissl-path",
+        "nissl_path",
         type=Path,
         help="""\
         Path to Nissl Volume.
         """,
     )
     parser.add_argument(
-        "--ccfv2-path",
+        "ccfv2_path",
         type=Path,
         help="""\
         Path to CCFv2 Volume.
         """,
     )
     parser.add_argument(
-        "--ccfv3-path",
+        "ccfv3_path",
         type=Path,
         help="""\
         Path to CCFv3 Volume.
         """,
     )
     parser.add_argument(
-        "--gene-name",
+        "gene_name",
         type=Path,
         help="""\
         Gene Expression to use.
@@ -66,6 +66,7 @@ def parse_args():
         "--interpolator-name",
         type=str,
         choices=("rife", "cain", "maskflownet", "raftnet"),
+        default="rife",
         help="""\
         Name of the interpolator model.
         """,
@@ -109,7 +110,7 @@ def get_experiments_list_to_run(
     experiment_path: Path | str,
     force: bool,
 ) -> set[int]:
-    """Returns the set of experiments still to be runned.
+    """Returns the set of experiments still to be run.
 
     Parameters
     ----------
@@ -207,13 +208,12 @@ def main(
     experiments_list = get_experiments_list_to_run(
         gene_name, interpolated_gene_path, force
     )
-    print(experiments_list)
     if experiments_list:
         logger.info("Interpolating the missing slices of the gene expression...")
         for experiment in experiments_list:
             interpolate_gene_main(
                 gene_path=aligned_gene_path / f"{experiment}-warped-gene.npy",
-                metadata_path=aligned_gene_path / f"{experiment}-section-numbers.json",
+                metadata_path=aligned_gene_path / f"{experiment}-metadata.json",
                 interpolator_name=interpolator_name,
                 interpolator_checkpoint=interpolator_checkpoint,
                 reference_path=reference_path,

@@ -28,14 +28,14 @@ def parse_args():
     """Parse arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--gene-path",
+        "gene_path",
         type=Path,
         help="""\
         Path to Gene Expression.
         """,
     )
     parser.add_argument(
-        "--metadata-path",
+        "metadata_path",
         type=Path,
         help="""\
         Path to json containing metadata of gene expression.
@@ -179,10 +179,7 @@ def main(
 
     gene_name = Path(gene_path).stem.split("-")[0]
 
-    if output_dir is None:
-        output_dir = Path(__file__).parent / "interpolate-gene"
-    else:
-        output_dir = Path(output_dir)
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     np.save(

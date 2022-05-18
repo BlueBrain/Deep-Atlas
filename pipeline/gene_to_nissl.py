@@ -201,7 +201,7 @@ def main(
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / f"{gene_experiment}-warped-gene", warped_genes)
 
-    with open(output_dir / f"{gene_experiment}-section-numbers.json", "w") as f:
+    with open(output_dir / f"{gene_experiment}-metadata.json", "w") as f:
         json.dump(json_dict, f)
 
     return 0
