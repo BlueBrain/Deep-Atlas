@@ -117,21 +117,20 @@ def registration(
     images_list, labels_mapping = remap_labels([reference_volume, moving_volume])
     reference_volume, moving_volume = images_list
 
+    reference_volume = reference_volume.astype(np.float32)
+    moving_volume = moving_volume.astype(np.float32)
+
     logger.info("Compute the registration...")
-    nii_data = register(
-        reference_volume.astype(np.float32), moving_volume.astype(np.float32)
-    )
+    nii_data = register(reference_volume, moving_volume)
 
     logger.info("Apply transformation to Moving Volume...")
-    warped_volume = transform(
-        moving_volume.astype(np.float32), nii_data, interpolator="genericLabel"
-    )
+    warped_volume = transform(moving_volume, nii_data, interpolator="genericLabel")
 
     logger.info("Remap the warped volume to original labels...")
     warped_temp = np.zeros_like(warped_volume)
     for before, after in labels_mapping.items():
         warped_temp[warped_volume == after] = before
-    warped_volume = warped_temp
+    warped_volume = warped_temp.astype(int)
 
     logger.info("Apply transformation to Nissl Volume...")
     nissl_warped = transform(nissl_volume.astype(np.float32), nii_data)
