@@ -33,28 +33,28 @@ def parse_args():
     """Parse arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--nissl-path",
+        "nissl_path",
         type=Path,
         help="""\
         Path to Nissl Volume.
         """,
     )
     parser.add_argument(
-        "--ccfv2-path",
+        "ccfv2_path",
         type=Path,
         help="""\
         Path to CCFv2 annotation volume.
         """,
     )
     parser.add_argument(
-        "--ccfv3-path",
+        "ccfv3_path",
         type=Path,
         help="""\
         Path to CCFv3 annotation volume.
         """,
     )
     parser.add_argument(
-        "--output-dir",
+        "output_dir",
         type=Path,
         help="""\
         Path to output directory to save results.
@@ -63,7 +63,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def check_and_load(path: pathlib.Path | str) -> np.array:
+def check_and_load(path: pathlib.Path | str) -> np.ndarray:
     """Load volume if path exists.
 
     Parameters
@@ -73,20 +73,25 @@ def check_and_load(path: pathlib.Path | str) -> np.array:
 
     Returns
     -------
-    volume : np.array
+    volume : np.ndarray
         Loaded volume.
+
+    Raises
+    ------
+    ValueError
+        When the path specified does not exist.
     """
     path = Path(path)
     if not path.exists():
-        logger.error(f"The specified path {path} does not exist.")
-        return 1
+        raise ValueError(f"The specified path {path} does not exist.")
+
     volume = load_volume(path, normalize=False)
     return volume.astype(np.float32)
 
 
 def slice_registration(
-    fixed: np.array, moving: np.array, nissl_slice: np.array | None = None
-) -> tuple[np.array, np.array | None]:
+    fixed: np.ndarray, moving: np.ndarray, nissl_slice: np.ndarray | None = None
+) -> tuple[np.ndarray, np.ndarray | None]:
     """Compute registration transform between a couple of slices.
 
     Parameters
@@ -101,9 +106,9 @@ def slice_registration(
 
     Returns
     -------
-    warped : np.array
+    warped : np.ndarray
         Warped slice of type annotation.
-    nissl_slice : np.array | None
+    nissl_slice : np.ndarray | None
         If a nissl slice is specified, the given slice is warped with the
         same transformation.
     """
@@ -117,8 +122,8 @@ def slice_registration(
 
 
 def registration(
-    reference_volume: np.array, moving_volume: np.array, nissl_volume: np.array
-) -> tuple[np.array, np.array]:
+    reference_volume: np.ndarray, moving_volume: np.ndarray, nissl_volume: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """Compute registration between a moving volume and reference one.
 
     The registration is computed in two steps:
@@ -143,9 +148,9 @@ def registration(
 
     Returns
     -------
-    warped_volume
+    warped_volume : np.ndarray
         Moving volume after the registration transformation.
-    nissl_warped
+    nissl_warped : np.ndarray
         Nissl volume once the registration transformation are applied.
     """
     warped_volume = np.zeros_like(moving_volume)
@@ -193,22 +198,19 @@ def main(
     nissl_path: Path | str,
     ccfv2_path: Path | str,
     ccfv3_path: Path | str,
-    output_dir: Path | str | None = None,
+    output_dir: Path | str,
 ) -> int:
     """Implement main function."""
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
     ccfv2 = check_and_load(ccfv2_path)
     ccfv3 = check_and_load(ccfv3_path)
-    if output_dir is not None:
-        output_dir = Path(output_dir)
 
     logger.info("Start registration...")
     warped_atlas, warped_nissl = registration(ccfv3, ccfv2, nissl)
 
     logger.info("Saving results...")
-    if output_dir is None:
-        output_dir = Path(__file__).parent / "nissl-to-ccfv3"
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / "warped-ccfv2", warped_atlas)
     np.save(output_dir / "warped-nissl", warped_nissl)
