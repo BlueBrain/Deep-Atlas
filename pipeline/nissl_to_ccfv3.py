@@ -113,6 +113,7 @@ def registration(
         Nissl volume once the registration transformation are applied.
     """
     from atlannot.utils import remap_labels
+
     logger.info("Remap labels of the atlases...")
     images_list, labels_mapping = remap_labels([reference_volume, moving_volume])
     reference_volume, moving_volume = images_list

@@ -173,7 +173,8 @@ def main(
             dataset_gen = dataset.run()
             axis = CommonQueries.get_axis(experiment_id)
             dataset_np, expression_np, metadata_dict = postprocess_dataset(
-                dataset_gen, len(dataset))
+                dataset_gen, len(dataset)
+            )
             metadata_dict["axis"] = axis
 
             logger.info(f"Saving results of experiment ID {experiment_id}")

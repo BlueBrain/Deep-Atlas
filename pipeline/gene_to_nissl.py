@@ -29,36 +29,34 @@ from atlannot.ants import register, transform
 
 # Initialize the logger
 logger = logging.getLogger("gene-to-nissl")
-DATA_FOLDER = pathlib.Path(__file__).resolve().parent.parent / "data"
 
 
 def parse_args():
     """Parse arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--gene-path",
+        "gene_path",
         type=Path,
         help="""\
         Path to Gene Expression.
         """,
     )
     parser.add_argument(
-        "--metadata-path",
+        "metadata_path",
         type=Path,
         help="""\
         Path to json containing metadata of gene expression.
         """,
     )
     parser.add_argument(
-        "--nissl-path",
+        "nissl_path",
         type=Path,
-        default=DATA_FOLDER / "ara_nissl_25.nrrd",
         help="""\
         Path to Nissl Volume.
         """,
     )
     parser.add_argument(
-        "--output-dir",
+        "output_dir",
         type=Path,
         help="""\
         Path to directory where to save the results.
@@ -67,7 +65,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def check_and_load(volume_path: pathlib.Path | str, normalize: bool = True) -> np.array:
+def check_and_load(
+    volume_path: pathlib.Path | str, normalize: bool = True
+) -> np.ndarray:
     """Load volume if path exists.
 
     Parameters
@@ -80,7 +80,7 @@ def check_and_load(volume_path: pathlib.Path | str, normalize: bool = True) -> n
 
     Returns
     -------
-    volume : np.array
+    volume : np.ndarray
         Loaded volume.
     """
     volume_path = Path(volume_path)
@@ -104,8 +104,8 @@ def check_and_load(volume_path: pathlib.Path | str, normalize: bool = True) -> n
 
 
 def registration(
-    nissl_volume: np.array, gene_volume: np.array, section_numbers: np.array
-) -> np.array:
+    nissl_volume: np.ndarray, gene_volume: np.ndarray, section_numbers: np.ndarray
+) -> np.ndarray:
     """Compute registration transform between a couple of volumes.
 
     Parameters
@@ -113,13 +113,13 @@ def registration(
     nissl_volume
         Nissl volume (fixed volume during registration).
     gene_volume
-        Gene to register.(moving volume during registration).
+        Gene to register (moving volume during registration).
     section_numbers
         Section numbers of every gene slice in gene volume.
 
     Returns
     -------
-    warped_genes : np.array
+    warped_genes : np.ndarray
         Warped slice.
     """
     rgb = False
@@ -159,20 +159,18 @@ def main(
     gene_path: Path | str,
     metadata_path: Path | str,
     nissl_path: Path | str,
-    output_dir: Path | str | None = None,
+    output_dir: Path | str,
 ) -> int:
     """Implement main function."""
     gene_path = Path(gene_path)
     metadata_path = Path(metadata_path)
     nissl_path = Path(nissl_path)
-    if output_dir is not None:
-        output_dir = Path(output_dir)
+    output_dir = Path(output_dir)
 
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
     genes = check_and_load(gene_path)
     gene_experiment = gene_path.stem
-    gene_name = gene_path.parent.stem
 
     with open(metadata_path) as f:
         json_dict = json.load(f)
@@ -200,8 +198,6 @@ def main(
     warped_genes = registration(nissl, genes, section_numbers)
 
     logger.info("Saving results...")
-    if output_dir is None:
-        output_dir = Path(__file__).parent / "gene-to-nissl" / gene_name
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / f"{gene_experiment}-warped-gene", warped_genes)
 
