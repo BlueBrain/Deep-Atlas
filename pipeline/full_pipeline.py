@@ -177,7 +177,11 @@ def main(
     gene_experiment_path = output_dir / "download-gene" / gene_name
     if not gene_experiment_path.exists() or force:
         logger.info("Downloading Gene Expression...")
-        download_gene_main(gene_name, output_dir=output_dir / "download-gene")
+        download_gene_main(
+            gene_name,
+            output_dir=output_dir / "download-gene",
+            downsample_img=1,
+        )
     else:
         logger.info(
             "Downloading Gene Expression: Skipped \n"
