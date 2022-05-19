@@ -182,6 +182,10 @@ def main(
         )
         predicted_volume = gene_optical_flow.predict_volume()
 
+    # Mirror the volume if the dataset is sagittal
+    if axis == "sagittal":
+        predicted_volume[:, :, 228:] = np.flip(predicted_volume[:, :, :228], axis=2)
+
     gene_name = Path(gene_path).stem.split("-")[0]
 
     output_dir = Path(output_dir)
