@@ -42,9 +42,17 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "output_dir",
+        type=Path,
+        help="""\
+        Path to directory where to save the resulting gene expression volume.
+        """,
+    )
+    parser.add_argument(
         "--interpolator-name",
         type=str,
         choices=("linear", "rife", "cain", "maskflownet", "raftnet"),
+        default="rife",
         help="""\
         Name of the interpolator model.
         """,
@@ -65,21 +73,18 @@ def parse_args():
         specify a reference path.
         """,
     )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        help="""\
-        Path to directory where to save the resulting gene expression volume.
-        """,
-    )
     return parser.parse_args()
 
 
-def load_interpolator_model(interpolator_name: str, checkpoint: str | Path):
+def load_interpolator_model(interpolator_name: str, checkpoint: str | Path | None):
+    if checkpoint is None and interpolator_name not in {"linear"}:
+        raise ValueError(f"You need to provide a checkpoint for the {interpolator_name} model")
 
-    checkpoint = Path(checkpoint)
-    if not checkpoint.exists():
-        raise ValueError(f"The checkpoint path {checkpoint} does not exist.")
+    if checkpoint is not None:
+        checkpoint = Path(checkpoint)
+
+        if not checkpoint.exists():
+            raise ValueError(f"The checkpoint path {checkpoint} does not exist.")
 
     if interpolator_name == "rife":
         from atlinter.pair_interpolation import RIFEPairInterpolationModel
@@ -163,7 +168,7 @@ def main(
 
     # Create a gene interpolator
     logger.info("Start interpolating the entire volume...")
-    if interpolator_name in {"cain", "rife"}:
+    if interpolator_name in {"cain", "linear", "rife"}:
         from atlinter.pair_interpolation import GeneInterpolate
 
         gene_interpolate = GeneInterpolate(gene_dataset, interpolator_model)
