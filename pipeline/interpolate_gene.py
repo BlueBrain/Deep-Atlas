@@ -136,7 +136,7 @@ def main(
     gene_path: Path | str,
     metadata_path: Path | str,
     interpolator_name: str,
-    interpolator_checkpoint: str | Path,
+    interpolator_checkpoint: str | Path | None,
     reference_path: str | Path,
     output_dir: Path | str | None = None,
 ) -> int:

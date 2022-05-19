@@ -63,6 +63,13 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "output_dir",
+        type=Path,
+        help="""\
+        Path to directory where to save the results.
+        """,
+    )
+    parser.add_argument(
         "--interpolator-name",
         type=str,
         choices=("rife", "cain", "maskflownet", "raftnet"),
@@ -85,13 +92,6 @@ def parse_args():
         Path to the reference volume used for the optical flow prediction.
         If interpolation model is "cain" or "rife", there is no need to 
         specify a reference path.
-        """,
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        help="""\
-        Path to directory where to save the results.
         """,
     )
     parser.add_argument(
@@ -146,8 +146,8 @@ def main(
     ccfv3_path: Path | str,
     gene_name: str,
     interpolator_name: str,
-    interpolator_checkpoint: Path | str,
-    output_dir: Path | str | None = None,
+    interpolator_checkpoint: Path | str | None,
+    output_dir: Path | str,
     reference_path: str | None = None,
     force: bool = False,
 ) -> int:
@@ -157,10 +157,7 @@ def main(
     from interpolate_gene import main as interpolate_gene_main
     from nissl_to_ccfv3 import main as nissl_to_ccfv3_main
 
-    if output_dir is None:
-        output_dir = Path(__file__).parent / "full-pipeline"
-    else:
-        output_dir = Path(output_dir)
+    output_dir = Path(output_dir)
 
     warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped-nissl.npy"
     if not warped_nissl_path.exists() or force:
