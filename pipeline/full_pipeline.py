@@ -19,8 +19,6 @@ import logging
 import sys
 from pathlib import Path
 
-from atldld.utils import get_experiment_list_from_gene
-
 logger = logging.getLogger("full-pipeline")
 
 
@@ -157,12 +155,13 @@ def main(
             f"Nissl is already aligned and saved under {warped_nissl_path}"
         )
 
-    gene_experiment_path = output_dir / "download-gene" / f"{gene_id}.npy"
+    gene_experiment_dir = output_dir / "download-gene"
+    gene_experiment_path = gene_experiment_dir / f"{gene_id}.npy"
     if not gene_experiment_path.exists() or force:
         logger.info("Downloading Gene Expression...")
         download_gene_main(
             gene_id,
-            output_dir=output_dir / "download-gene",
+            output_dir=gene_experiment_dir,
             downsample_img=downsample_img,
             expression=expression,
         )
@@ -177,15 +176,14 @@ def main(
 
     if not aligned_gene_path.exists() or force:
         logger.info("Aligning downloaded Gene Expression to new Nissl volume...")
-        expression_path = (
-            gene_experiment_path / f"{gene_id}-expression.npy" if expression else None
-        )
         gene_to_nissl_main(
-            gene_path=gene_experiment_path / f"{gene_id}.npy",
-            metadata_path=gene_experiment_path / f"{gene_id}.json",
+            gene_path=gene_experiment_dir / f"{gene_id}.npy",
+            metadata_path=gene_experiment_dir / f"{gene_id}.json",
             nissl_path=warped_nissl_path,
             output_dir=aligned_results_dir,
-            expression_path=expression_path,
+            expression_path=gene_experiment_dir / f"{gene_id}-expression.npy"
+            if expression
+            else None,
         )
     else:
         logger.info("Aligning downloaded Gene Expression to new Nissl volume: Skipped")
@@ -198,9 +196,13 @@ def main(
 
     if not interpolated_gene_path.exists() or force:
         logger.info("Interpolating the missing slices of the gene expression...")
-        paths = [aligned_results_dir / f"{gene_id}-warped-gene.npy", ]
+        paths = [
+            aligned_results_dir / f"{gene_id}-warped-gene.npy",
+        ]
         if expression:
-            paths += [aligned_results_dir / f"{gene_id}-warped-expression.npy",]
+            paths += [
+                aligned_results_dir / f"{gene_id}-warped-expression.npy",
+            ]
 
         for path in paths:
             interpolate_gene_main(
