@@ -70,6 +70,14 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "--downsample-img",
+        type=int,
+        default=0,
+        help="""\
+        Downsampling coefficient for the image download.
+        """,
+    )
+    parser.add_argument(
         "--interpolator-name",
         type=str,
         choices=("rife", "cain", "maskflownet", "raftnet"),
@@ -110,6 +118,7 @@ def main(
     ccfv2_path: Path | str,
     ccfv3_path: Path | str,
     gene_id: int,
+    downsample_img: int,
     interpolator_name: str,
     interpolator_checkpoint: Path | str | None,
     output_dir: Path | str,
@@ -145,7 +154,7 @@ def main(
         download_gene_main(
             gene_id,
             output_dir=output_dir / "download-gene",
-            downsample_img=1,
+            downsample_img=downsample_img,
         )
     else:
         logger.info(
