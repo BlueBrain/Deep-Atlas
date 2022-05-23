@@ -165,7 +165,7 @@ def main(
             f"{gene_id} is already downloaded and saved under {gene_experiment_path}"
         )
 
-    aligned_results_dir = output_dir / "gene-to-nissl"
+    aligned_results_dir = output_dir / "gene-to-nissl" / coordinate_sys
     aligned_gene_path = aligned_results_dir / f"{gene_id}-warped-gene.npy"
 
     if not aligned_gene_path.exists() or force:
@@ -179,7 +179,7 @@ def main(
     else:
         logger.info("Aligning downloaded Gene Expression to new Nissl volume: Skipped")
 
-    interpolation_results_dir = output_dir / "interpolate-gene"
+    interpolation_results_dir = output_dir / "interpolate-gene" / coordinate_sys
     interpolated_gene_path = (
         interpolation_results_dir
         / f"{gene_id}-{interpolator_name}-interpolated-gene.npy"
