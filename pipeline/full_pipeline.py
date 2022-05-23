@@ -70,6 +70,15 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "--coordinate-sys",
+        type=str,
+        default="ccfv2",
+        choices=("ccfv2", "ccfv3"),
+        help="""\
+        Downsampling coefficient for the image download.
+        """,
+    )
+    parser.add_argument(
         "--downsample-img",
         type=int,
         default=0,
@@ -94,15 +103,6 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--reference-path",
-        type=Path,
-        help="""\
-        Path to the reference volume used for the optical flow prediction.
-        If interpolation model is "cain" or "rife", there is no need to 
-        specify a reference path.
-        """,
-    )
-    parser.add_argument(
         "-f",
         "--force",
         action="store_true",
@@ -118,11 +118,11 @@ def main(
     ccfv2_path: Path | str,
     ccfv3_path: Path | str,
     gene_id: int,
+    coordinate_sys: str,
     downsample_img: int,
     interpolator_name: str,
     interpolator_checkpoint: Path | str | None,
     output_dir: Path | str,
-    reference_path: str | None = None,
     force: bool = False,
 ) -> int:
     """Implement the main function."""
@@ -133,20 +133,23 @@ def main(
 
     output_dir = Path(output_dir)
 
-    warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped-nissl.npy"
-    if not warped_nissl_path.exists() or force:
-        logger.info("Aligning Nissl volume to CCFv3 annotation volume...")
-        nissl_to_ccfv3_main(
-            nissl_path,
-            ccfv2_path,
-            ccfv3_path,
-            output_dir=output_dir / "nissl-to-ccfv3",
-        )
-    else:
-        logger.info(
-            "Aligning Nissl volume to CCFv3 annotation volume: Skipped \n"
-            f"Nissl is already aligned and saved under {warped_nissl_path}"
-        )
+    if coordinate_sys == "ccfv3":
+        warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped-nissl.npy"
+        if not warped_nissl_path.exists() or force:
+            logger.info("Aligning Nissl volume to CCFv3 annotation volume...")
+            nissl_to_ccfv3_main(
+                nissl_path,
+                ccfv2_path,
+                ccfv3_path,
+                output_dir=output_dir / "nissl-to-ccfv3",
+            )
+        else:
+            logger.info(
+                "Aligning Nissl volume to CCFv3 annotation volume: Skipped \n"
+                f"Nissl is already aligned and saved under {warped_nissl_path}"
+            )
+
+        nissl_path = warped_nissl_path
 
     gene_experiment_path = output_dir / "download-gene" / f"{gene_id}.npy"
     if not gene_experiment_path.exists() or force:
@@ -170,7 +173,7 @@ def main(
         gene_to_nissl_main(
             gene_path=gene_experiment_path / f"{gene_id}.npy",
             metadata_path=gene_experiment_path / f"{gene_id}.json",
-            nissl_path=warped_nissl_path,
+            nissl_path=nissl_path,
             output_dir=aligned_results_dir,
         )
     else:
@@ -189,7 +192,7 @@ def main(
             metadata_path=aligned_results_dir / f"{gene_id}-metadata.json",
             interpolator_name=interpolator_name,
             interpolator_checkpoint=interpolator_checkpoint,
-            reference_path=reference_path,
+            reference_path=nissl_path,
             output_dir=interpolation_results_dir,
         )
 
