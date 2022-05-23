@@ -78,7 +78,9 @@ def parse_args():
 
 def load_interpolator_model(interpolator_name: str, checkpoint: str | Path | None):
     if checkpoint is None and interpolator_name not in {"linear"}:
-        raise ValueError(f"You need to provide a checkpoint for the {interpolator_name} model")
+        raise ValueError(
+            f"You need to provide a checkpoint for the {interpolator_name} model"
+        )
 
     if checkpoint is not None:
         checkpoint = Path(checkpoint)
@@ -184,7 +186,10 @@ def main(
 
     # Mirror the volume if the dataset is sagittal
     if axis == "sagittal":
-        predicted_volume[:, :, 228:] = np.flip(predicted_volume[:, :, :228], axis=2)
+        sagittal_shape = predicted_volume.shape[2]
+        predicted_volume[:, :, (sagittal_shape // 2) :] = np.flip(
+            predicted_volume[:, :, : (sagittal_shape // 2)], axis=2
+        )
 
     gene_name = Path(gene_path).stem.split("-")[0]
 
