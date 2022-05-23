@@ -39,10 +39,10 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "gene_name",
-        type=str,
+        "gene_id",
+        type=int,
         help="""\
-        Name of the gene to download.
+        ID of the gene to download.
         """,
     )
     parser.add_argument(
@@ -129,7 +129,7 @@ def postprocess_dataset(
 
 
 def main(
-    gene_name: str,
+    gene_id: int,
     output_dir: Path | str,
     downsample_img: int,
 ) -> int:
@@ -137,8 +137,8 @@ def main(
 
     Parameters
     ----------
-    gene_name
-        Gene name to download.
+    gene_id
+        Gene ID to download.
     output_dir
         Directory when results are going to be saved.
     downsample_img
@@ -155,33 +155,28 @@ def main(
     PIL.Image.MAX_IMAGE_PIXELS = 200000000
 
     # Download dataset on allen
-    output_dir = Path(output_dir) / gene_name
+    output_dir = Path(output_dir)
 
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
 
-    for axis in ["sagittal", "coronal"]:
+    logger.info(f"Start downloading experiment ID {gene_id}")
+    dataset = DatasetDownloader(
+        gene_id, downsample_img=downsample_img, include_expression=True
+    )
+    dataset.fetch_metadata()
+    dataset_gen = dataset.run()
+    axis = CommonQueries.get_axis(gene_id)
+    dataset_np, expression_np, metadata_dict = postprocess_dataset(
+        dataset_gen, len(dataset)
+    )
+    metadata_dict["axis"] = axis
 
-        experiment_list = get_experiment_list_from_gene(gene_name, axis)
-        logger.info(f"{gene_name} have {len(experiment_list)} for {axis} axis")
-        for experiment_id in experiment_list:
-            logger.info(f"Start downloading experiment ID {experiment_id}")
-            dataset = DatasetDownloader(
-                experiment_id, downsample_img=downsample_img, include_expression=True
-            )
-            dataset.fetch_metadata()
-            dataset_gen = dataset.run()
-            axis = CommonQueries.get_axis(experiment_id)
-            dataset_np, expression_np, metadata_dict = postprocess_dataset(
-                dataset_gen, len(dataset)
-            )
-            metadata_dict["axis"] = axis
-
-            logger.info(f"Saving results of experiment ID {experiment_id}")
-            np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
-            np.save(output_dir / f"{experiment_id}.npy", dataset_np)
-            with open(output_dir / f"{experiment_id}.json", "w") as f:
-                json.dump(metadata_dict, f, indent=True, sort_keys=True)
+    logger.info(f"Saving results of experiment ID {gene_id}")
+    np.save(output_dir / f"{gene_id}-expression.npy", expression_np)
+    np.save(output_dir / f"{gene_id}.npy", dataset_np)
+    with open(output_dir / f"{gene_id}.json", "w") as f:
+        json.dump(metadata_dict, f, indent=True, sort_keys=True)
 
     return 0
 
