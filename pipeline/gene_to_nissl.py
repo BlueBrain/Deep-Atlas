@@ -62,6 +62,13 @@ def parse_args():
         Path to directory where to save the results.
         """,
     )
+    parser.add_argument(
+        "--expression-path",
+        type=Path,
+        help="""\
+        If specified, transformation also applied to the given numpy.
+        """,
+    )
     return parser.parse_args()
 
 
@@ -104,8 +111,11 @@ def check_and_load(
 
 
 def registration(
-    nissl_volume: np.ndarray, gene_volume: np.ndarray, section_numbers: np.ndarray
-) -> np.ndarray:
+    nissl_volume: np.ndarray,
+    gene_volume: np.ndarray,
+    section_numbers: np.ndarray,
+    expression_volume: np.ndarray | None,
+) -> tuple[np.ndarray, np.ndarray | None]:
     """Compute registration transform between a couple of volumes.
 
     Parameters
@@ -116,17 +126,23 @@ def registration(
         Gene to register (moving volume during registration).
     section_numbers
         Section numbers of every gene slice in gene volume.
+    expression_volume
+        If specified, volume to which we apply same transform
+        as the gene_volume.
 
     Returns
     -------
     warped_genes : np.ndarray
         Warped slice.
+    warped_expression : np.ndarray | None
+        Warped expression.
     """
     rgb = False
     if gene_volume.ndim == 4:
         rgb = True
 
     warped_genes = []
+    warped_expression = []
     for i, (section_number, gene_slice) in enumerate(zip(section_numbers, gene_volume)):
         try:
             nissl_slice = nissl_volume[int(section_number)]
@@ -149,10 +165,21 @@ def registration(
 
         warped_genes.append(warped)
 
+        if expression_volume is not None:
+            expression = expression_volume[i]
+            warped = np.zeros_like(expression)
+            warped[:, :, 0] = transform(expression[:, :, 0], nii_data)
+            warped[:, :, 1] = transform(expression[:, :, 1], nii_data)
+            warped[:, :, 2] = transform(expression[:, :, 2], nii_data)
+
+            warped_expression.append(warped)
+
         if (i + 1) % 5 == 0:
             logger.info(f" {i + 1} / {gene_volume.shape[0]} registrations done")
 
-    return np.array(warped_genes)
+    warped_expression = np.array(warped_expression) if warped_expression else None
+
+    return np.array(warped_genes), warped_expression
 
 
 def main(
@@ -160,17 +187,24 @@ def main(
     metadata_path: Path | str,
     nissl_path: Path | str,
     output_dir: Path | str,
+    expression_path: str | Path | None = None,
 ) -> int:
     """Implement main function."""
     gene_path = Path(gene_path)
     metadata_path = Path(metadata_path)
     nissl_path = Path(nissl_path)
     output_dir = Path(output_dir)
+    if expression_path is not None:
+        expression_path = Path(expression_path)
 
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
     genes = check_and_load(gene_path)
     gene_id = gene_path.stem
+
+    expression = None
+    if expression_path is not None:
+        expression = check_and_load(expression_path)
 
     with open(metadata_path) as f:
         json_dict = json.load(f)
@@ -195,7 +229,9 @@ def main(
 
     logger.info("Start registration...")
 
-    warped_genes = registration(nissl, genes, section_numbers)
+    warped_genes, warped_expression = registration(
+        nissl, genes, section_numbers, expression_volume=expression
+    )
 
     logger.info("Saving results...")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -203,6 +239,9 @@ def main(
 
     with open(output_dir / f"{gene_id}-metadata.json", "w") as f:
         json.dump(json_dict, f)
+
+    if warped_expression is not None:
+        np.save(output_dir / f"{gene_id}-warped-expression", warped_expression)
 
     return 0
 

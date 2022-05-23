@@ -19,8 +19,6 @@ import logging
 import sys
 from pathlib import Path
 
-from atldld.utils import get_experiment_list_from_gene
-
 logger = logging.getLogger("full-pipeline")
 
 
@@ -103,6 +101,14 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "-e",
+        "--expression",
+        action="store_true",
+        help="""\
+        If True, download and apply deformation to threshold images too.
+        """,
+    )
+    parser.add_argument(
         "-f",
         "--force",
         action="store_true",
@@ -123,6 +129,7 @@ def main(
     interpolator_name: str,
     interpolator_checkpoint: Path | str | None,
     output_dir: Path | str,
+    expression: bool = False,
     force: bool = False,
 ) -> int:
     """Implement the main function."""
@@ -151,13 +158,15 @@ def main(
 
         nissl_path = warped_nissl_path
 
-    gene_experiment_path = output_dir / "download-gene" / f"{gene_id}.npy"
+    gene_experiment_dir = output_dir / "download-gene"
+    gene_experiment_path = gene_experiment_dir / f"{gene_id}.npy"
     if not gene_experiment_path.exists() or force:
         logger.info("Downloading Gene Expression...")
         download_gene_main(
             gene_id,
-            output_dir=output_dir / "download-gene",
+            output_dir=gene_experiment_dir,
             downsample_img=downsample_img,
+            expression=expression,
         )
     else:
         logger.info(
@@ -169,15 +178,18 @@ def main(
     aligned_gene_path = aligned_results_dir / f"{gene_id}-warped-gene.npy"
 
     if not aligned_gene_path.exists() or force:
-        logger.info("Aligning downloaded Gene Expression to new Nissl volume...")
+        logger.info(f"Aligning downloaded Gene Expression to Nissl volume in {coordinate_sys} ({nissl_path})...")
         gene_to_nissl_main(
-            gene_path=gene_experiment_path / f"{gene_id}.npy",
-            metadata_path=gene_experiment_path / f"{gene_id}.json",
+            gene_path=gene_experiment_dir / f"{gene_id}.npy",
+            metadata_path=gene_experiment_dir / f"{gene_id}.json",
             nissl_path=nissl_path,
             output_dir=aligned_results_dir,
+            expression_path=gene_experiment_dir / f"{gene_id}-expression.npy"
+            if expression
+            else None,
         )
     else:
-        logger.info("Aligning downloaded Gene Expression to new Nissl volume: Skipped")
+        logger.info("Aligning downloaded Gene Expression to Nissl volume: Skipped")
 
     interpolation_results_dir = output_dir / "interpolate-gene" / coordinate_sys
     interpolated_gene_path = (
@@ -187,14 +199,23 @@ def main(
 
     if not interpolated_gene_path.exists() or force:
         logger.info("Interpolating the missing slices of the gene expression...")
-        interpolate_gene_main(
-            gene_path=aligned_results_dir / f"{gene_id}-warped-gene.npy",
-            metadata_path=aligned_results_dir / f"{gene_id}-metadata.json",
-            interpolator_name=interpolator_name,
-            interpolator_checkpoint=interpolator_checkpoint,
-            reference_path=nissl_path,
-            output_dir=interpolation_results_dir,
-        )
+        paths = [
+            aligned_results_dir / f"{gene_id}-warped-gene.npy",
+        ]
+        if expression:
+            paths += [
+                aligned_results_dir / f"{gene_id}-warped-expression.npy",
+            ]
+
+        for path in paths:
+            interpolate_gene_main(
+                gene_path=path,
+                metadata_path=aligned_results_dir / f"{gene_id}-metadata.json",
+                interpolator_name=interpolator_name,
+                interpolator_checkpoint=interpolator_checkpoint,
+                reference_path=nissl_path,
+                output_dir=interpolation_results_dir,
+            )
 
     return 0
 
