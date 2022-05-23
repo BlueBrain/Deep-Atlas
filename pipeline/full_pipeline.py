@@ -56,10 +56,10 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "gene_name",
-        type=Path,
+        "gene_id",
+        type=int,
         help="""\
-        Gene Expression to use.
+        Gene ID to use.
         """,
     )
     parser.add_argument(
@@ -113,46 +113,11 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_experiments_list_to_run(
-    gene_name: str,
-    experiment_path: Path | str,
-    force: bool,
-) -> set[int]:
-    """Returns the set of experiments still to be run.
-
-    Parameters
-    ----------
-    gene_name
-        Name of the gene to experiment.
-    experiment_path
-        Path where the results of the given experiment are saved.
-    force
-        If force is True, all the experiments are going to be returned
-        even if some paths already exist.
-
-    Returns
-    -------
-    experiments_list: set[int]
-        Set of experiments IDs to run.
-    """
-    experiments_ids = get_experiment_list_from_gene(gene_name, "coronal")
-    experiments_ids.extend(get_experiment_list_from_gene(gene_name, "sagittal"))
-
-    if not Path(experiment_path).exists() or force:
-        return set(experiments_ids)
-
-    experiments_results = {
-        int(filename.stem.split("-")[0]) for filename in experiment_path.iterdir()
-    }
-    experiments_list = set(experiments_ids) - experiments_results
-    return experiments_list
-
-
 def main(
     nissl_path: Path | str,
     ccfv2_path: Path | str,
     ccfv3_path: Path | str,
-    gene_name: str,
+    gene_id: int,
     downsample_img: int,
     interpolator_name: str,
     interpolator_checkpoint: Path | str | None,
@@ -183,52 +148,50 @@ def main(
             f"Nissl is already aligned and saved under {warped_nissl_path}"
         )
 
-    gene_experiment_path = output_dir / "download-gene" / gene_name
+    gene_experiment_path = output_dir / "download-gene" / f"{gene_id}.npy"
     if not gene_experiment_path.exists() or force:
         logger.info("Downloading Gene Expression...")
         download_gene_main(
-            gene_name,
+            gene_id,
             output_dir=output_dir / "download-gene",
             downsample_img=downsample_img,
         )
     else:
         logger.info(
             "Downloading Gene Expression: Skipped \n"
-            f"{gene_name} is already downloaded and saved under {gene_experiment_path}"
+            f"{gene_id} is already downloaded and saved under {gene_experiment_path}"
         )
 
-    aligned_gene_path = output_dir / "gene-to-nissl" / gene_name
-    experiments_list = get_experiments_list_to_run(gene_name, aligned_gene_path, force)
-    if experiments_list:
+    aligned_results_dir = output_dir / "gene-to-nissl"
+    aligned_gene_path = aligned_results_dir / f"{gene_id}-warped-gene.npy"
+
+    if not aligned_gene_path.exists() or force:
         logger.info("Aligning downloaded Gene Expression to new Nissl volume...")
-        for experiment in experiments_list:
-            logger.info(
-                f"Aligning Gene Expression Experiment {experiment} to new Nissl volume..."
-            )
-            gene_to_nissl_main(
-                gene_path=gene_experiment_path / f"{experiment}.npy",
-                metadata_path=gene_experiment_path / f"{experiment}.json",
-                nissl_path=warped_nissl_path,
-                output_dir=aligned_gene_path,
-            )
+        gene_to_nissl_main(
+            gene_path=gene_experiment_path / f"{gene_id}.npy",
+            metadata_path=gene_experiment_path / f"{gene_id}.json",
+            nissl_path=warped_nissl_path,
+            output_dir=aligned_results_dir,
+        )
     else:
         logger.info("Aligning downloaded Gene Expression to new Nissl volume: Skipped")
 
-    interpolated_gene_path = output_dir / "interpolate-gene" / gene_name
-    experiments_list = get_experiments_list_to_run(
-        gene_name, interpolated_gene_path, force
+    interpolation_results_dir = output_dir / "interpolate-gene"
+    interpolated_gene_path = (
+        interpolation_results_dir
+        / f"{gene_id}-{interpolator_name}-interpolated-gene.npy"
     )
-    if experiments_list:
+
+    if not interpolated_gene_path.exists() or force:
         logger.info("Interpolating the missing slices of the gene expression...")
-        for experiment in experiments_list:
-            interpolate_gene_main(
-                gene_path=aligned_gene_path / f"{experiment}-warped-gene.npy",
-                metadata_path=aligned_gene_path / f"{experiment}-metadata.json",
-                interpolator_name=interpolator_name,
-                interpolator_checkpoint=interpolator_checkpoint,
-                reference_path=reference_path,
-                output_dir=interpolated_gene_path,
-            )
+        interpolate_gene_main(
+            gene_path=aligned_results_dir / f"{gene_id}-warped-gene.npy",
+            metadata_path=aligned_results_dir / f"{gene_id}-metadata.json",
+            interpolator_name=interpolator_name,
+            interpolator_checkpoint=interpolator_checkpoint,
+            reference_path=reference_path,
+            output_dir=interpolation_results_dir,
+        )
 
     return 0
 
