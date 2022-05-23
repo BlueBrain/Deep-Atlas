@@ -60,6 +60,14 @@ def parse_args():
         Factor of downsampling of the images when downloading them.
         """,
     )
+    parser.add_argument(
+        "-e",
+        "--expression",
+        action="store_true",
+        help="""\
+        If True, download and apply deformation to threshold images too.
+        """,
+    )
     args = parser.parse_args()
 
     return args
@@ -112,14 +120,16 @@ def postprocess_dataset(
         section_numbers.append(section_coordinate // 25)
         image_ids.append(img_id)
         warped_img = 255 - df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
-        warped_exp = df.warp(
-            img_expression, border_mode="constant", c=img[255, 255, :].tolist()
-        )
         dataset_np.append(warped_img)
-        expression_np.append(warped_exp)
+
+        if img_expression is not None:
+            warped_exp = df.warp(
+                img_expression, border_mode="constant", c=img[255, 255, :].tolist()
+            )
+            expression_np.append(warped_exp)
 
     dataset_np = np.array(dataset_np)
-    expression_np = np.array(expression_np)
+    expression_np = np.array(expression_np) if expression_np else None
 
     metadata_dict["section_numbers"] = section_numbers
     metadata_dict["image_ids"] = image_ids
@@ -132,6 +142,7 @@ def main(
     gene_id: int,
     output_dir: Path | str,
     downsample_img: int,
+    expression: bool = True,
 ) -> int:
     """Download gene expression dataset.
 
@@ -144,6 +155,8 @@ def main(
     downsample_img
         Downsampling factor given to Allen API when downloading the images.
         This factor is going to reduce the size.
+    expression
+        If True, threshold images are downloaded too.
     """
     # Imports
     import json
@@ -162,7 +175,7 @@ def main(
 
     logger.info(f"Start downloading experiment ID {gene_id}")
     dataset = DatasetDownloader(
-        gene_id, downsample_img=downsample_img, include_expression=True
+        gene_id, downsample_img=downsample_img, include_expression=expression
     )
     dataset.fetch_metadata()
     dataset_gen = dataset.run()
@@ -173,10 +186,12 @@ def main(
     metadata_dict["axis"] = axis
 
     logger.info(f"Saving results of experiment ID {gene_id}")
-    np.save(output_dir / f"{gene_id}-expression.npy", expression_np)
     np.save(output_dir / f"{gene_id}.npy", dataset_np)
     with open(output_dir / f"{gene_id}.json", "w") as f:
         json.dump(metadata_dict, f, indent=True, sort_keys=True)
+
+    if expression_np is not None:
+        np.save(output_dir / f"{gene_id}-expression.npy", expression_np)
 
     return 0
 

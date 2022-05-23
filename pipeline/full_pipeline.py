@@ -103,6 +103,14 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "-e",
+        "--expression",
+        action="store_true",
+        help="""\
+        If True, download and apply deformation to threshold images too.
+        """,
+    )
+    parser.add_argument(
         "-f",
         "--force",
         action="store_true",
@@ -123,6 +131,7 @@ def main(
     interpolator_checkpoint: Path | str | None,
     output_dir: Path | str,
     reference_path: str | None = None,
+    expression: bool = False,
     force: bool = False,
 ) -> int:
     """Implement the main function."""
@@ -155,6 +164,7 @@ def main(
             gene_id,
             output_dir=output_dir / "download-gene",
             downsample_img=downsample_img,
+            expression=expression,
         )
     else:
         logger.info(
