@@ -1,7 +1,10 @@
-git+https://github.com/BlueBrain/atlas-annotation@main
+#git+https://github.com/BlueBrain/atlas-annotation@main
 atldld
 git+https://github.com/BlueBrain/atlas-interpolation@main
+flow_vis # for optical flow models
+moviepy # for optical flow models
 numpy
+opencv-python # for optical flow models
 pillow
 pynrrd
 scikit-image
