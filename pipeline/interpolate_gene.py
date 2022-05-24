@@ -118,7 +118,7 @@ def load_interpolator_model(interpolator_name: str, checkpoint: str | Path | Non
     elif interpolator_name == "maskflownet":
         from atlinter.optical_flow import MaskFlowNet
 
-        model = MaskFlowNet(checkpoint)
+        model = MaskFlowNet(str(checkpoint))
 
     elif interpolator_name == "raftnet":
         from atlinter.optical_flow import RAFTNet
