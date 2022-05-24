@@ -144,8 +144,9 @@ def main(
 ) -> int:
     """Implement main function."""
     import numpy as np
-
     from atlinter.data import GeneDataset
+
+    from utils import check_and_load
 
     logger.info("Loading Data...")
     section_images = np.load(gene_path)
@@ -178,7 +179,7 @@ def main(
     else:
         from atlinter.optical_flow import GeneOpticalFlow
 
-        reference_volume = np.load(reference_path)
+        reference_volume = check_and_load(reference_path)
         gene_optical_flow = GeneOpticalFlow(
             gene_dataset, reference_volume, interpolator_model
         )

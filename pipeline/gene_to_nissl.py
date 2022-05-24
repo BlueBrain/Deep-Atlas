@@ -72,44 +72,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def check_and_load(
-    volume_path: pathlib.Path | str, normalize: bool = True
-) -> np.ndarray:
-    """Load volume if path exists.
-
-    Parameters
-    ----------
-    volume_path
-        File path.
-    normalize
-        If True, normalize the image between 0 and 1.
-        Otherwise, keep the raw values.
-
-    Returns
-    -------
-    volume : np.ndarray
-        Loaded volume.
-    """
-    volume_path = Path(volume_path)
-    if not volume_path.exists():
-        raise ValueError(f"The specified path {volume_path} does not exist.")
-
-    if volume_path.suffix == ".nrrd":
-        img, header = nrrd.read(volume_path)
-
-    elif volume_path.suffix == ".npy":
-        img = np.load(volume_path)
-
-    else:
-        raise ValueError(f"The extension {volume_path.suffix} is not supported.")
-
-    img = img.astype(np.float32)
-    if normalize:
-        img = (img - img.min()) / (img.max() - img.min())
-
-    return img
-
-
 def registration(
     nissl_volume: np.ndarray,
     gene_volume: np.ndarray,
@@ -190,6 +152,8 @@ def main(
     expression_path: str | Path | None = None,
 ) -> int:
     """Implement main function."""
+    from utils import check_and_load
+
     gene_path = Path(gene_path)
     metadata_path = Path(metadata_path)
     nissl_path = Path(nissl_path)
