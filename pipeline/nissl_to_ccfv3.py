@@ -113,27 +113,15 @@ def registration(
         Nissl volume once the registration transformation are applied.
     """
     from atlannot.utils import remap_labels
-    from deepatlas.utils import Remapper
-
-    logger.info("Remap labels of the atlases...")
-    remapper = Remapper(reference_volume, moving_volume)
-    reference_volume = remapper.remap_old_to_new(0)
-    moving_volume = remapper.remap_old_to_new(1)
-
-    # reference_volume = reference_volume.astype(np.float32)
-    # moving_volume = moving_volume.astype(np.float32)
 
     logger.info("Compute the registration...")
-    nii_data = register(reference_volume, moving_volume, remapping=False, type_of_transform="AffineFast")
+    nii_data = register(reference_volume, moving_volume)
 
     logger.info("Apply transformation to Moving Volume...")
-    warped_volume = transform(moving_volume, nii_data, remapping=False, interpolator="genericLabel")
-
-    logger.info("Remap the warped volume to original labels...")
-    warped_volume = remapper.remap_new_to_old(warped_volume)
+    warped_volume = transform(moving_volume, nii_data, interpolator="genericLabel")
 
     logger.info("Apply transformation to Nissl Volume...")
-    nissl_warped = transform(nissl_volume.astype(np.float32), nii_data, remapping=False)
+    nissl_warped = transform(nissl_volume.astype(np.float32), nii_data)
 
     return warped_volume, nissl_warped
 
