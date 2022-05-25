@@ -188,8 +188,8 @@ def main(
     # Mirror the volume if the dataset is sagittal
     if axis == "sagittal":
         sagittal_shape = predicted_volume.shape[2]
-        predicted_volume[:, :, (sagittal_shape // 2):] = np.flip(
-            predicted_volume[:, :, :(sagittal_shape // 2)], axis=2
+        predicted_volume[:, :, (sagittal_shape // 2) :] = np.flip(
+            predicted_volume[:, :, : (sagittal_shape // 2)], axis=2
         )
 
     experiment_id = Path(gene_path).stem.split("-")[0]
@@ -199,7 +199,8 @@ def main(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     np.save(
-        output_dir / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}.npy",
+        output_dir
+        / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}.npy",
         predicted_volume,
     )
 

@@ -98,8 +98,8 @@ def registration(
         Warped slice.
     warped_expression : np.ndarray | None
         Warped expression.
-    new_section_numbers : np.ndarray
-        Updated section numbers
+    section_numbers_kept : np.ndarray
+        Boolean value saying if section was kept or removed.
     """
     rgb = False
     if gene_volume.ndim == 4:
@@ -107,7 +107,7 @@ def registration(
 
     warped_genes = []
     warped_expression = []
-    new_section_numbers = []
+    section_numbers_kept = []
     for i, (section_number, gene_slice) in enumerate(zip(section_numbers, gene_volume)):
         try:
             nissl_slice = nissl_volume[int(section_number)]
@@ -117,6 +117,7 @@ def registration(
                 f"out of nissl volume shape {nissl_volume.shape}. This slice is"
                 "removed from the pipeline."
             )
+            section_numbers_kept.append(False)
             continue
 
         if rgb:
@@ -144,14 +145,15 @@ def registration(
 
             warped_expression.append(warped)
 
-        new_section_numbers.append(section_number)
+        section_numbers_kept.append(True)
 
         if (i + 1) % 5 == 0:
             logger.info(f" {i + 1} / {gene_volume.shape[0]} registrations done")
 
     warped_expression = np.array(warped_expression) if warped_expression else None
+    section_numbers_kept = np.array(section_numbers_kept, dtype=bool)
 
-    return np.array(warped_genes), warped_expression, np.array(new_section_numbers)
+    return np.array(warped_genes), warped_expression, section_numbers_kept
 
 
 def main(
@@ -203,7 +205,7 @@ def main(
 
     logger.info("Start registration...")
 
-    warped_genes, warped_expression, new_section_numbers = registration(
+    warped_genes, warped_expression, section_numbers_kept = registration(
         nissl, genes, section_numbers, expression_volume=expression
     )
 
@@ -211,7 +213,17 @@ def main(
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / f"{experiment_id}-warped-gene", warped_genes)
 
-    json_dict["section_numbers"] = new_section_numbers
+    json_dict["section_numbers"] = [
+        image_id
+        for image_id, kept in zip(json_dict["section_numbers"], section_numbers_kept)
+        if kept
+    ]
+    json_dict["image_ids"] = [
+        image_id
+        for image_id, kept in zip(json_dict["image_ids"], section_numbers_kept)
+        if kept
+    ]
+
     with open(output_dir / f"{experiment_id}-metadata.json", "w") as f:
         json.dump(json_dict, f)
 
