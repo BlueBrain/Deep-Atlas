@@ -39,10 +39,10 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "gene_id",
+        "experiment_id",
         type=int,
         help="""\
-        ID of the gene to download.
+        ID of the experiment to download.
         """,
     )
     parser.add_argument(
@@ -139,7 +139,7 @@ def postprocess_dataset(
 
 
 def main(
-    gene_id: int,
+    experiment_id: int,
     output_dir: Path | str,
     downsample_img: int,
     expression: bool = True,
@@ -148,7 +148,7 @@ def main(
 
     Parameters
     ----------
-    gene_id
+    experiment_id
         Gene ID to download.
     output_dir
         Directory when results are going to be saved.
@@ -173,25 +173,25 @@ def main(
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
 
-    logger.info(f"Start downloading experiment ID {gene_id}")
+    logger.info(f"Start downloading experiment ID {experiment_id}")
     dataset = DatasetDownloader(
-        gene_id, downsample_img=downsample_img, include_expression=expression
+        experiment_id, downsample_img=downsample_img, include_expression=expression
     )
     dataset.fetch_metadata()
     dataset_gen = dataset.run()
-    axis = CommonQueries.get_axis(gene_id)
+    axis = CommonQueries.get_axis(experiment_id)
     dataset_np, expression_np, metadata_dict = postprocess_dataset(
         dataset_gen, len(dataset)
     )
     metadata_dict["axis"] = axis
 
-    logger.info(f"Saving results of experiment ID {gene_id}")
-    np.save(output_dir / f"{gene_id}.npy", dataset_np)
-    with open(output_dir / f"{gene_id}.json", "w") as f:
+    logger.info(f"Saving results of experiment ID {experiment_id}")
+    np.save(output_dir / f"{experiment_id}.npy", dataset_np)
+    with open(output_dir / f"{experiment_id}.json", "w") as f:
         json.dump(metadata_dict, f, indent=True, sort_keys=True)
 
     if expression_np is not None:
-        np.save(output_dir / f"{gene_id}-expression.npy", expression_np)
+        np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
 
     return 0
 
