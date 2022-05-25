@@ -105,9 +105,9 @@ def load_interpolator_model(interpolator_name: str, checkpoint: str | Path | Non
         from atlinter.pair_interpolation import CAINPairInterpolationModel
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        cain_model = torch.nn.DataParallel(CAIN()).to(device)
+        cain_model = CAIN().to(device)
         cain_checkpoint = torch.load(checkpoint, map_location=device)
-        cain_model.load_state_dict(cain_checkpoint["state_dict"])
+        cain_model.load_state_dict(cain_checkpoint)
         model = CAINPairInterpolationModel(cain_model)
 
     elif interpolator_name == "linear":
