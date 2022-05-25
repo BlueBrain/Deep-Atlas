@@ -1,6 +1,6 @@
 git+https://github.com/BlueBrain/atlas-annotation@main
 atldld
-git+https://github.com/BlueBrain/atlas-interpolation@main
+git+https://github.com/BlueBrain/atlas-interpolation@main#egg=atlinter[optical]
 numpy
 pillow
 pynrrd

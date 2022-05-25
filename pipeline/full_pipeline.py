@@ -87,7 +87,7 @@ def parse_args():
     parser.add_argument(
         "--interpolator-name",
         type=str,
-        choices=("rife", "cain", "maskflownet", "raftnet"),
+        choices=("linear", "rife", "cain", "maskflownet", "raftnet"),
         default="rife",
         help="""\
         Name of the interpolator model.
