@@ -84,8 +84,6 @@ def registration(
     nissl_warped : np.ndarray
         Nissl volume once the registration transformation are applied.
     """
-    from atlannot.utils import remap_labels
-
     logger.info("Compute the registration...")
     nii_data = register(reference_volume, moving_volume)
 
