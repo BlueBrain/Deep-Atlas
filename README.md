@@ -9,6 +9,14 @@ brain atlas images.
   annotation atlases.
 - [Atlas Interpolation](#atlas-interpolation) — Slice interpolation for atlases.
 
+
+It also provides multiple scripts that can run the full pipeline.
+
+## Full pipeline
+<img alt="Atlas Download Tools Banner" src="images/pipeline.svg" width="900"/>
+
+
+
 ## Atlas Download Tools
 <img alt="Atlas Download Tools Banner" src="images/Atlas-Download-Tools-banner.jpg" width="600"/>
 
