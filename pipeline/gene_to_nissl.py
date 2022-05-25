@@ -164,7 +164,7 @@ def main(
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
     genes = check_and_load(gene_path)
-    gene_id = gene_path.stem
+    experiment_id = gene_path.stem
 
     expression = None
     if expression_path is not None:
@@ -199,13 +199,13 @@ def main(
 
     logger.info("Saving results...")
     output_dir.mkdir(parents=True, exist_ok=True)
-    np.save(output_dir / f"{gene_id}-warped-gene", warped_genes)
+    np.save(output_dir / f"{experiment_id}-warped-gene", warped_genes)
 
-    with open(output_dir / f"{gene_id}-metadata.json", "w") as f:
+    with open(output_dir / f"{experiment_id}-metadata.json", "w") as f:
         json.dump(json_dict, f)
 
     if warped_expression is not None:
-        np.save(output_dir / f"{gene_id}-warped-expression", warped_expression)
+        np.save(output_dir / f"{experiment_id}-warped-expression", warped_expression)
 
     return 0
 
