@@ -17,13 +17,11 @@ from __future__ import annotations
 
 import argparse
 import logging
-import pathlib
 import sys
 from pathlib import Path
 
 import numpy as np
 
-from atlannot import load_volume
 from atlannot.ants import register, transform
 
 logger = logging.getLogger("nissl-to-ccfv3")
@@ -61,32 +59,6 @@ def parse_args():
         """,
     )
     return parser.parse_args()
-
-
-def check_and_load(path: pathlib.Path | str) -> np.ndarray:
-    """Load volume if path exists.
-
-    Parameters
-    ----------
-    path
-        File path.
-
-    Returns
-    -------
-    volume : np.ndarray
-        Loaded volume.
-
-    Raises
-    ------
-    ValueError
-        When the path specified does not exist.
-    """
-    path = Path(path)
-    if not path.exists():
-        raise ValueError(f"The specified path {path} does not exist.")
-
-    volume = load_volume(path, normalize=False)
-    return volume
 
 
 def registration(
@@ -133,6 +105,8 @@ def main(
     output_dir: Path | str,
 ) -> int:
     """Implement main function."""
+    from utils import check_and_load
+
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
     ccfv2 = check_and_load(ccfv2_path)
