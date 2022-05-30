@@ -77,7 +77,7 @@ def registration(
     gene_volume: np.ndarray,
     section_numbers: np.ndarray,
     expression_volume: np.ndarray | None,
-) -> tuple[np.ndarray, np.ndarray | None, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray | None, list[bool]]:
     """Compute registration transform between a couple of volumes.
 
     Parameters
@@ -98,7 +98,7 @@ def registration(
         Warped slice.
     warped_expression : np.ndarray | None
         Warped expression.
-    section_numbers_kept : np.ndarray
+    section_numbers_kept : list[bool]
         Boolean value saying if section was kept or removed.
     """
     rgb = False
@@ -151,7 +151,6 @@ def registration(
             logger.info(f" {i + 1} / {gene_volume.shape[0]} registrations done")
 
     warped_expression = np.array(warped_expression) if warped_expression else None
-    section_numbers_kept = np.array(section_numbers_kept, dtype=bool)
 
     return np.array(warped_genes), warped_expression, section_numbers_kept
 
