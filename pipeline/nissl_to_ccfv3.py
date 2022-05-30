@@ -93,7 +93,7 @@ def registration(
     warped_volume = transform(moving_volume, nii_data, interpolator="genericLabel")
 
     logger.info("Apply transformation to Nissl Volume...")
-    nissl_warped = transform(nissl_volume.astype(np.float32), nii_data)
+    nissl_warped = transform(nissl_volume, nii_data)
 
     return warped_volume, nissl_warped
 

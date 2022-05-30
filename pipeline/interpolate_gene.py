@@ -149,7 +149,7 @@ def main(
     from utils import check_and_load
 
     logger.info("Loading Data...")
-    section_images = np.load(gene_path)
+    section_images = check_and_load(gene_path, normalize=True)
     with open(metadata_path) as fh:
         metadata = json.load(fh)
 

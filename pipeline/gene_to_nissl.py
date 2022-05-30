@@ -202,7 +202,7 @@ def main(
     np.save(output_dir / f"{experiment_id}-warped-gene", warped_genes)
 
     with open(output_dir / f"{experiment_id}-metadata.json", "w") as f:
-        json.dump(json_dict, f)
+        json.dump(json_dict, f, indent=True, sort_keys=True)
 
     if warped_expression is not None:
         np.save(output_dir / f"{experiment_id}-warped-expression", warped_expression)
