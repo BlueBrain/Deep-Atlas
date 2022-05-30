@@ -77,7 +77,7 @@ def registration(
     gene_volume: np.ndarray,
     section_numbers: np.ndarray,
     expression_volume: np.ndarray | None,
-) -> tuple[np.ndarray, np.ndarray | None]:
+) -> tuple[np.ndarray, np.ndarray | None, list[bool]]:
     """Compute registration transform between a couple of volumes.
 
     Parameters
@@ -98,6 +98,8 @@ def registration(
         Warped slice.
     warped_expression : np.ndarray | None
         Warped expression.
+    section_numbers_kept : list[bool]
+        Boolean value saying if section was kept or removed.
     """
     rgb = False
     if gene_volume.ndim == 4:
@@ -105,10 +107,17 @@ def registration(
 
     warped_genes = []
     warped_expression = []
+    section_numbers_kept = []
     for i, (section_number, gene_slice) in enumerate(zip(section_numbers, gene_volume)):
         try:
             nissl_slice = nissl_volume[int(section_number)]
         except IndexError:
+            logger.warn(
+                f"One of the gene slice has a section number ({section_number})"
+                f"out of nissl volume shape {nissl_volume.shape}. This slice is"
+                "removed from the pipeline."
+            )
+            section_numbers_kept.append(False)
             continue
 
         if rgb:
@@ -136,12 +145,14 @@ def registration(
 
             warped_expression.append(warped)
 
+        section_numbers_kept.append(True)
+
         if (i + 1) % 5 == 0:
             logger.info(f" {i + 1} / {gene_volume.shape[0]} registrations done")
 
     warped_expression = np.array(warped_expression) if warped_expression else None
 
-    return np.array(warped_genes), warped_expression
+    return np.array(warped_genes), warped_expression, section_numbers_kept
 
 
 def main(
@@ -193,13 +204,24 @@ def main(
 
     logger.info("Start registration...")
 
-    warped_genes, warped_expression = registration(
+    warped_genes, warped_expression, section_numbers_kept = registration(
         nissl, genes, section_numbers, expression_volume=expression
     )
 
     logger.info("Saving results...")
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / f"{experiment_id}-warped-gene", warped_genes)
+
+    json_dict["section_numbers"] = [
+        image_id
+        for image_id, kept in zip(json_dict["section_numbers"], section_numbers_kept)
+        if kept
+    ]
+    json_dict["image_ids"] = [
+        image_id
+        for image_id, kept in zip(json_dict["image_ids"], section_numbers_kept)
+        if kept
+    ]
 
     with open(output_dir / f"{experiment_id}-metadata.json", "w") as f:
         json.dump(json_dict, f, indent=True, sort_keys=True)
@@ -211,7 +233,10 @@ def main(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
     args = parse_args()
     kwargs = vars(args)
     sys.exit(main(**kwargs))

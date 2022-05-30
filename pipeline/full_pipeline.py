@@ -171,14 +171,16 @@ def main(
     else:
         logger.info(
             "Downloading Gene Expression: Skipped \n"
-            f"{gene_id} is already downloaded and saved under {gene_experiment_path}"
+            f"{experiment_id} is already downloaded and saved under {gene_experiment_path}"
         )
 
     aligned_results_dir = output_dir / "gene-to-nissl" / coordinate_sys
     aligned_gene_path = aligned_results_dir / f"{experiment_id}-warped-gene.npy"
 
     if not aligned_gene_path.exists() or force:
-        logger.info(f"Aligning downloaded Gene Expression to Nissl volume in {coordinate_sys} ({nissl_path})...")
+        logger.info(
+            f"Aligning downloaded Gene Expression to Nissl volume in {coordinate_sys} ({nissl_path})..."
+        )
         gene_to_nissl_main(
             gene_path=gene_experiment_dir / f"{experiment_id}.npy",
             metadata_path=gene_experiment_dir / f"{experiment_id}.json",
@@ -221,7 +223,10 @@ def main(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
     args = parse_args()
     kwargs = vars(args)
     sys.exit(main(**kwargs))
