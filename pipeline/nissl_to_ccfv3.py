@@ -86,6 +86,7 @@ def registration(
     """
     logger.info("Compute the registration...")
     nii_data = register(reference_volume, moving_volume)
+    logger.debug(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
 
     logger.info("Apply transformation to Moving Volume...")
     warped_volume = transform(moving_volume, nii_data, interpolator="genericLabel")
@@ -104,14 +105,24 @@ def main(
 ) -> int:
     """Implement main function."""
     from utils import check_and_load
+    from atlannot.utils import Remapper
 
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
     ccfv2 = check_and_load(ccfv2_path)
     ccfv3 = check_and_load(ccfv3_path)
 
+    logger.info("Remapping CCFv2 and CCFv3 volumes to consecutive labels")
+    remapper = Remapper(ccfv2, ccfv3)
+    ccfv2 = remapper.remap_old_to_new(0)
+    ccfv3 = remapper.remap_old_to_new(1)
+
     logger.info("Start registration...")
     warped_atlas, warped_nissl = registration(ccfv3, ccfv2, nissl)
+
+    logger.info("Remapping CCFv2 to original labels")
+    warped_atlas = remapper.remap_new_to_old(warped_atlas)
+    
 
     logger.info("Saving results...")
     output_dir = Path(output_dir)
