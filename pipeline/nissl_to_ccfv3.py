@@ -86,7 +86,7 @@ def registration(
     """
     logger.info("Compute the registration...")
     nii_data = register(reference_volume, moving_volume)
-    logger.debug(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
+    logger.info(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
 
     logger.info("Apply transformation to Moving Volume...")
     warped_volume = transform(moving_volume, nii_data, interpolator="genericLabel")
