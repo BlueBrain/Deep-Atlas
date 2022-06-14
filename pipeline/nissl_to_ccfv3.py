@@ -122,7 +122,6 @@ def main(
 
     logger.info("Remapping CCFv2 to original labels")
     warped_atlas = remapper.remap_new_to_old(warped_atlas)
-    
 
     logger.info("Saving results...")
     output_dir = Path(output_dir)

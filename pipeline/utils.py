@@ -17,7 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-from atlannot import load_volume
+from atlannot.utils import load_volume
 
 
 def check_and_load(path: Path | str, normalize: bool = False) -> np.ndarray:
