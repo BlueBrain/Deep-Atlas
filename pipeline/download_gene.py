@@ -17,14 +17,13 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from tqdm import tqdm
 from pathlib import Path
 from typing import Any, Generator, Optional, Tuple
 
 import numpy as np
 import PIL
 from atldld.base import DisplacementField
-
+from tqdm import tqdm
 
 logger = logging.getLogger("download-gene")
 
@@ -162,7 +161,7 @@ def main(
     import json
 
     from atldld.sync import DatasetDownloader
-    from atldld.utils import CommonQueries, get_experiment_list_from_gene
+    from atldld.utils import CommonQueries
 
     # To avoid Decompression Warning
     PIL.Image.MAX_IMAGE_PIXELS = 200000000

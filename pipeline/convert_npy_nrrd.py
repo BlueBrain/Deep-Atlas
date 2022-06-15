@@ -47,13 +47,11 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(
-    input_path: Path,
-    output_path: Path
-) -> int:
+def main(input_path: Path, output_path: Path) -> int:
 
     array = np.load(input_path)
     nrrd.write(str(output_path), array)
+    return 0
 
 
 if __name__ == "__main__":
