@@ -20,7 +20,6 @@ import logging
 import sys
 from pathlib import Path
 
-
 logger = logging.getLogger("interpolate-gene")
 
 
@@ -69,7 +68,7 @@ def parse_args():
         type=Path,
         help="""\
         Path to the reference volume used for the optical flow prediction.
-        If interpolation model is "cain" or "rife", there is no need to 
+        If interpolation model is "cain" or "rife", there is no need to
         specify a reference path.
         """,
     )
@@ -100,9 +99,8 @@ def load_interpolator_model(interpolator_name: str, checkpoint: str | Path | Non
 
     elif interpolator_name == "cain":
         import torch
-
-        from atlinter.vendor.cain.cain import CAIN
         from atlinter.pair_interpolation import CAINPairInterpolationModel
+        from atlinter.vendor.cain.cain import CAIN
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         cain_model = CAIN().to(device)
@@ -145,7 +143,6 @@ def main(
     """Implement main function."""
     import numpy as np
     from atlinter.data import GeneDataset
-
     from utils import check_and_load
 
     logger.info("Loading Data...")
@@ -188,7 +185,7 @@ def main(
     # Mirror the volume if the dataset is sagittal
     if axis == "sagittal":
         sagittal_shape = predicted_volume.shape[2]
-        predicted_volume[:, :, (sagittal_shape // 2) :] = np.flip(
+        predicted_volume[:, :, (sagittal_shape // 2):] = np.flip(
             predicted_volume[:, :, : (sagittal_shape // 2)], axis=2
         )
 

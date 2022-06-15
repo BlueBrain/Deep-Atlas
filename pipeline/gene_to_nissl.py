@@ -21,9 +21,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from skimage.color import rgb2gray
-
 from atlannot.ants import register, transform
+from skimage.color import rgb2gray
 
 # Initialize the logger
 logger = logging.getLogger("gene-to-nissl")

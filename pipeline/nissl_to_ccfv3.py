@@ -21,7 +21,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-
 from atlannot.ants import register, transform
 
 logger = logging.getLogger("nissl-to-ccfv3")
@@ -104,8 +103,8 @@ def main(
     output_dir: Path | str,
 ) -> int:
     """Implement main function."""
-    from utils import check_and_load
     from atlannot.utils import Remapper
+    from utils import check_and_load
 
     logger.info("Loading volumes")
     nissl = check_and_load(nissl_path)
