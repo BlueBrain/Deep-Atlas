@@ -17,11 +17,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import pathlib
 import sys
 from pathlib import Path
 
-import nrrd
 import numpy as np
 from skimage.color import rgb2gray
 
