@@ -5,10 +5,10 @@ FROM nvidia/cuda:10.2-devel-ubuntu18.04
 # ENVs are visible both at image build time and container run time.
 # We want the http proxys to be visible in both cases and therefore
 # set them equal to the values of the ARGs.
-ENV http_proxy=http://bbpproxy.epfl.ch:80
-ENV https_proxy=http://bbpproxy.epfl.ch:80
-ENV HTTP_PROXY=http://bbpproxy.epfl.ch:80
-ENV HTTPS_PROXY=http://bbpproxy.epfl.ch:80
+ENV http_proxy=
+ENV https_proxy=
+ENV HTTP_PROXY=
+ENV HTTPS_PROXY=
 
 # Debian's default LANG=C breaks python3.
 # See commends in the official python docker file:
