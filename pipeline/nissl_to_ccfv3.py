@@ -84,16 +84,23 @@ def registration(
         Nissl volume once the registration transformation are applied.
     """
     logger.info("Compute the registration...")
-    nii_data = register(reference_volume, moving_volume)
-    logger.info(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
+    nissl_warped = []
+    warped_volume = []
 
-    logger.info("Apply transformation to Moving Volume...")
-    warped_volume = transform(moving_volume, nii_data, interpolator="genericLabel")
+    for i, (reference, moving, nissl) in enumerate(zip(reference_volume, moving_volume, nissl_volume)):
+        nii_data = register(reference, moving)
+        logger.info(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
 
-    logger.info("Apply transformation to Nissl Volume...")
-    nissl_warped = transform(nissl_volume, nii_data)
+        logger.info("Apply transformation to Moving Volume...")
+        warped_volume.append(transform(moving, nii_data, interpolator="genericLabel"))
 
-    return warped_volume, nissl_warped
+        logger.info("Apply transformation to Nissl Volume...")
+        nissl_warped.append(transform(nissl, nii_data))
+
+        if (i + 1) % 5 == 0:
+            logger.info(f" {i + 1} / {reference_volume.shape[0]} registrations done")
+
+    return np.array(warped_volume), np.array(nissl_warped)
 
 
 def main(
