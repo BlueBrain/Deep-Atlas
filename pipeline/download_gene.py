@@ -52,6 +52,14 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "--downsample-ref",
+        type=int,
+        default=25,
+        help="""\
+        Downsampling factor of the reference space.
+        """,
+    )
+    parser.add_argument(
         "--downsample-img",
         type=int,
         default=0,
@@ -79,6 +87,7 @@ def postprocess_dataset(
         None,
     ],
     n_images: int,
+    downsample_ref: int,
 ) -> Tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     """Post process given dataset.
 
@@ -116,7 +125,7 @@ def postprocess_dataset(
             # TODO: maybe notify the user somehow?
             continue
 
-        section_numbers.append(section_coordinate // 25)
+        section_numbers.append(section_coordinate // downsample_ref)
         image_ids.append(img_id)
         warped_img = 255 - df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
         dataset_np.append(warped_img)
@@ -140,6 +149,7 @@ def postprocess_dataset(
 def main(
     experiment_id: int,
     output_dir: Path | str,
+    downsample_ref: int,
     downsample_img: int,
     expression: bool = True,
 ) -> int:
@@ -151,6 +161,10 @@ def main(
         Gene ID to download.
     output_dir
         Directory when results are going to be saved.
+    downsample_ref
+        Downscaling of the reference space grid. If set to 1 no
+        downsampling takes place. The higher the value the smaller the grid
+        in the reference space and the faster the matrix multiplication.
     downsample_img
         Downsampling factor given to Allen API when downloading the images.
         This factor is going to reduce the size.
@@ -174,19 +188,22 @@ def main(
 
     logger.info(f"Start downloading experiment ID {experiment_id}")
     dataset = DatasetDownloader(
-        experiment_id, downsample_img=downsample_img, include_expression=expression
+        experiment_id,
+        downsample_img=downsample_img,
+        include_expression=expression,
+        downsample_ref=downsample_ref,
     )
     dataset.fetch_metadata()
     dataset_gen = dataset.run()
     axis = CommonQueries.get_axis(experiment_id)
     dataset_np, expression_np, metadata_dict = postprocess_dataset(
-        dataset_gen, len(dataset)
+        dataset_gen, len(dataset), downsample_ref
     )
     metadata_dict["axis"] = axis
 
     logger.info(f"Saving results of experiment ID {experiment_id}")
-    np.save(output_dir / f"{experiment_id}.npy", dataset_np)
-    with open(output_dir / f"{experiment_id}.json", "w") as f:
+    np.save(output_dir / f"{experiment_id}-{downsample_ref}.npy", dataset_np)
+    with open(output_dir / f"{experiment_id}-{downsample_ref}.json", "w") as f:
         json.dump(metadata_dict, f, indent=True, sort_keys=True)
 
     if expression_np is not None:
