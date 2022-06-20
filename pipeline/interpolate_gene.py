@@ -198,7 +198,7 @@ def main(
 
     np.save(
         output_dir
-        / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}.npy",
+        / f"{experiment_id}-{metadata['downsample-ref']}-{interpolator_name}-interpolated-{image_type}.npy",
         predicted_volume,
     )
 
