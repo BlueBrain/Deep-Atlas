@@ -200,6 +200,7 @@ def main(
         dataset_gen, len(dataset), downsample_ref
     )
     metadata_dict["axis"] = axis
+    metadata_dict["downsample-ref"] = downsample_ref
 
     logger.info(f"Saving results of experiment ID {experiment_id}")
     np.save(output_dir / f"{experiment_id}-{downsample_ref}.npy", dataset_np)
