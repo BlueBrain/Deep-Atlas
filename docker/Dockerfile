@@ -42,11 +42,18 @@ update-alternatives --install /usr/local/bin/python python /usr/bin/python3.7 0
 # Install requirements
 COPY requirements.txt /tmp
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+ARG MY_USER_ID
+COPY docker/utils.sh /tmp
+RUN \
+. /tmp/utils.sh && \
+groupadd -g 999 docker && \
+create_users "${MY_USER_ID},guest/1000" "docker"
 
 # Entry point
 EXPOSE 8888
 RUN mkdir /workdir && chmod a+rwX /workdir
 COPY . /workdir/
 WORKDIR /workdir
+USER guest
 ENTRYPOINT ["env"]
 CMD ["bash", "-l"]
