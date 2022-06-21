@@ -88,14 +88,19 @@ def registration(
     warped_volume = []
 
     for i, (reference, moving, nissl) in enumerate(zip(reference_volume, moving_volume, nissl_volume)):
-        nii_data = register(reference, moving)
-        logger.info(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
+        try:
+            nii_data = register(reference, moving)
+            logger.info(f"Max displacements: {np.abs(nii_data).max(axis=(0, 1, 2, 3))}")
 
-        logger.info("Apply transformation to Moving Volume...")
-        warped_volume.append(transform(moving, nii_data, interpolator="genericLabel"))
+            logger.info("Apply transformation to Moving Volume...")
+            warped_volume.append(transform(moving, nii_data, interpolator="genericLabel"))
 
-        logger.info("Apply transformation to Nissl Volume...")
-        nissl_warped.append(transform(nissl, nii_data))
+            logger.info("Apply transformation to Nissl Volume...")
+            nissl_warped.append(transform(nissl, nii_data))
+        except RuntimeError:
+            logger.info(f"Registration for slice {i} went wrong...")
+            warped_volume.append(moving)
+            nissl_warped.append(nissl)
 
         if (i + 1) % 5 == 0:
             logger.info(f" {i + 1} / {reference_volume.shape[0]} registrations done")
