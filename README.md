@@ -74,6 +74,31 @@ included. Finally, one can also pass stage specific parameters
 (e.g. `--interpolator-name` for the interpolation stage).
 
 
+## Docker
+We provide a docker file that allows you to run the `pipeline` on a docker container. 
+To build the docker image run the following command:
+
+```bash
+docker build 
+-f docker/Dockerfile
+-t deep-atlas-pipeline
+.
+```
+By default, the user is `guest` but if one wants to configure a specific user, 
+one can specify `MY_USER_ID` and launch the building command with this new variable.
+```bash
+export MY_USER_ID="$(whoami)/$(id -u)"
+docker build \
+-f docker/Dockerfile \
+-t deep-atlas-pipeline \
+--build-arg MY_USER_ID \
+.
+```
+
+To run the container use the following command:
+```bash
+docker run --rm -it deep-atlas-pipeline
+```
 
 ## Dependencies
 The full pipeline depends on multiple other projects.
