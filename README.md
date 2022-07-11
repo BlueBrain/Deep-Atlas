@@ -76,6 +76,13 @@ included. Finally, one can also pass stage specific parameters
 
 ## Docker
 We provide a docker file that allows you to run the `pipeline` on a docker container. 
+Note that it is important to specify your user to be able to run the container with it.
+To do so, one needs to first uncomment the line and add the info about the users.
+The list of users has a comma separated list of users with the format `<username>/<userid>`.
+```bash
+ENV DEAL_USER_IDS="$(whoami)/$(id -u)"
+```
+
 To build the docker image run the following command:
 
 ```bash

@@ -9,6 +9,9 @@ ENV http_proxy=
 ENV https_proxy=
 ENV HTTP_PROXY=
 ENV HTTPS_PROXY=
+#ENV DEAL_USER_IDS=
+
+RUN test -n "$DEAL_USER_IDS" || echo "WARNING: variable DEAL_USER_IDS was not set, creating only default user 'guest/1000' !"
 
 # Debian's default LANG=C breaks python3.
 # See commends in the official python docker file:
@@ -47,7 +50,7 @@ COPY docker/utils.sh /tmp
 RUN \
 . /tmp/utils.sh && \
 groupadd -g 999 docker && \
-create_users "${MY_USER_ID},guest/1000" "docker"
+create_users "${DEAL_USER_IDS},guest/1000" "docker"
 
 # Entry point
 EXPOSE 8888
