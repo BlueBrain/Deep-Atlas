@@ -106,6 +106,42 @@ To run the container use the following command:
 docker run --rm -it deep-atlas-pipeline
 ```
 
+### Singularity for BB5
+Docker is not supported in BB5 and [singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html) will be used instead.
+1) ssh into BB5. 
+
+`ssh bbpv1` or `ssh bbpv1.epfl.ch`.
+
+2) Allocate an interactive session using Slurm. Note that you have to use a `projectID` that you have permissions for.
+```bash
+salloc \
+--nodes 1 \
+--account proj<X> \
+--partition interactive \
+--constraint volta \
+--time 1:00:00 \
+--ntasks-per-node 36
+```
+or with a shorter notation
+```bash
+salloc -N 1 -A proj<X> -p interactive -C volta -t 1:00:00 --ntasks-per-node 36
+```
+3) Load the singularity module.
+```bash
+module load unstable singularityce
+```
+4) Pull the docker image from GitLab.
+```bash
+singularity pull --docker-login --no-https docker://bbpgitlab.epfl.ch:5050/ml/deep-atlas:cuda10.2
+```
+A new file named `deep-atlas_cuda10.2.sif` will be created. This is your singularity image.
+
+5) Run the singularity container:
+```bash
+singularity exec --cleanenv --nv --containall --bind $TMPDIR:/tmp,/gpfs/bbp.cscs.ch/project,$HOME:/home deep-atlas_cuda10.2.sif bash
+```
+There is no write access inside the singularity container. Results have to be written, for instance, to the `/home` directory that is linked to the `$HOME` of BB5 or to `GPFS` mounted at `/gpfs`. (see the option `--bind` above)
+
 ## Dependencies
 The full pipeline depends on multiple other projects.
 - [Atlas Download Tools](#atlas-download-tools) — Search, download, and prepare
