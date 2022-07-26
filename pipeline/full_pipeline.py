@@ -47,13 +47,6 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "ccfv3_path",
-        type=Path,
-        help="""\
-        Path to CCFv3 Volume.
-        """,
-    )
-    parser.add_argument(
         "experiment_id",
         type=int,
         help="""\
@@ -65,6 +58,13 @@ def parse_args():
         type=Path,
         help="""\
         Path to directory where to save the results.
+        """,
+    )
+    parser.add_argument(
+        "--ccfv3_path",
+        type=Path,
+        help="""\
+        Path to CCFv3 Volume.
         """,
     )
     parser.add_argument(
@@ -122,8 +122,8 @@ def parse_args():
 def main(
     nissl_path: Path | str,
     ccfv2_path: Path | str,
-    ccfv3_path: Path | str,
     experiment_id: int,
+    ccfv3_path: Path | str | None,
     coordinate_sys: str,
     downsample_img: int,
     interpolator_name: str,
@@ -141,6 +141,11 @@ def main(
     output_dir = Path(output_dir)
 
     if coordinate_sys == "ccfv3":
+        if ccfv3_path is None:
+            logger.error(
+                "One needs to specify CCFv3 annotation volume to run the pipeline"
+            )
+            return 1
         warped_nissl_path = output_dir / "nissl-to-ccfv3" / "warped-nissl.npy"
         if not warped_nissl_path.exists() or force:
             logger.info("Aligning Nissl volume to CCFv3 annotation volume...")
