@@ -28,35 +28,29 @@ it is also possible to run different stages of the pipeline separately.
 See below the `--help` of the `full_pipeline.py` script.
 
 ```bash
-usage: full_pipeline.py [-h] [--coordinate-sys {ccfv2,ccfv3}]
-                        [--downsample-img DOWNSAMPLE_IMG]
-                        [--interpolator-name {linear,rife,cain,maskflownet,raftnet}]
-                        [--interpolator-checkpoint INTERPOLATOR_CHECKPOINT]
-                        [-e] [-f]
-                        nissl_path ccfv2_path ccfv3_path gene_id
-                        output_dir
+usage: full_pipeline.py [-h] [--coordinate-sys {ccfv2,ccfv3}] [--downsample-img DOWNSAMPLE_IMG] [--interpolator-name {linear,rife,cain,maskflownet,raftnet}]
+                        [--interpolator-checkpoint INTERPOLATOR_CHECKPOINT] [-e] [-f]
+                        nissl_path ccfv2_path ccfv3_path experiment_id output_dir
 
 positional arguments:
   nissl_path            Path to Nissl Volume.
   ccfv2_path            Path to CCFv2 Volume.
   ccfv3_path            Path to CCFv3 Volume.
-  experiment_id         Experiment ID to use.
+  experiment_id         Experiment ID from Allen Brain to use.
   output_dir            Path to directory where to save the results.
 
 optional arguments:
   -h, --help            show this help message and exit
   --coordinate-sys {ccfv2,ccfv3}
-                        Downsampling coefficient for the image download.
+                        Downsampling coefficient for the image download. (default: ccfv2)
   --downsample-img DOWNSAMPLE_IMG
-                        Downsampling coefficient for the image download.
+                        Downsampling coefficient for the image download. (default: 0)
   --interpolator-name {linear,rife,cain,maskflownet,raftnet}
-                        Name of the interpolator model.
+                        Name of the interpolator model. (default: rife)
   --interpolator-checkpoint INTERPOLATOR_CHECKPOINT
-                        Path of the interpolator checkpoints.
-  -e, --expression      If True, download and apply deformation to
-                        threshold images too.
-  -f, --force           If True, force to recompute every steps.
-
+                        Path of the interpolator checkpoints. (default: None)
+  -e, --expression      If True, download and apply deformation to threshold images too. (default: False)
+  -f, --force           If True, force to recompute every steps. (default: False)
 ```
 
 The user is supposed to provide the following inputs (positional arguments)
@@ -85,13 +79,19 @@ docker build
 .
 ```
 By default, the user is `guest` but if one wants to configure a specific user, 
-one can specify `MY_USER_ID` and launch the building command with this new variable.
+one needs to first uncomment the line and add the info about the users.
+The list of users has a comma separated list of users with the format `<username>/<userid>`.
 ```bash
-export MY_USER_ID="$(whoami)/$(id -u)"
+ENV DEAL_USER_IDS="$(whoami)/$(id -u)"
+```
+or one can define the environment variable and use add this info 
+to the CLI command of `docker build`
+```bash
+export DEAL_USER_IDS="$(whoami)/$(id -u)"
 docker build \
 -f docker/Dockerfile \
 -t deep-atlas-pipeline \
---build-arg MY_USER_ID \
+--build-arg DEAL_USER_IDS \
 .
 ```
 
