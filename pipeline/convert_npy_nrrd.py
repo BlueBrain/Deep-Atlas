@@ -29,7 +29,9 @@ def parse_args():
         The parsed command line arguments.
     """
     """Parse arguments."""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "input_path",
         type=Path,
