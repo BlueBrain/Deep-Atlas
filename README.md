@@ -79,13 +79,19 @@ docker build
 .
 ```
 By default, the user is `guest` but if one wants to configure a specific user, 
-one can specify `MY_USER_ID` and launch the building command with this new variable.
+one needs to first uncomment the line and add the info about the users.
+The list of users has a comma separated list of users with the format `<username>/<userid>`.
 ```bash
-export MY_USER_ID="$(whoami)/$(id -u)"
+ENV DEAL_USER_IDS="$(whoami)/$(id -u)"
+```
+or one can define the environment variable and use add this info 
+to the CLI command of `docker build`
+```bash
+export DEAL_USER_IDS="$(whoami)/$(id -u)"
 docker build \
 -f docker/Dockerfile \
 -t deep-atlas-pipeline \
---build-arg MY_USER_ID \
+--build-arg DEAL_USER_IDS \
 .
 ```
 
