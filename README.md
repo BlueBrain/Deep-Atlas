@@ -28,20 +28,20 @@ it is also possible to run different stages of the pipeline separately.
 See below the `--help` of the `full_pipeline.py` script.
 
 ```bash
-usage: full_pipeline.py [-h] --nissl_path NISSL_PATH --ccfv2_path CCFV2_PATH --experiment_id EXPERIMENT_ID --output_dir OUTPUT_DIR [--ccfv3_path CCFV3_PATH] [--coordinate-sys {ccfv2,ccfv3}] [--downsample-img DOWNSAMPLE_IMG]
+usage: full_pipeline.py [-h] --nissl-path NISSL_PATH --ccfv2-path CCFV2_PATH --experiment-id EXPERIMENT_ID --output-dir OUTPUT_DIR [--ccfv3-path CCFV3_PATH] [--coordinate-sys {ccfv2,ccfv3}] [--downsample-img DOWNSAMPLE_IMG]
                         [--interpolator-name {linear,rife,cain,maskflownet,raftnet}] [--interpolator-checkpoint INTERPOLATOR_CHECKPOINT] [-e] [-f]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --nissl_path NISSL_PATH
+  --nissl-path NISSL_PATH
                         Path to Nissl Volume. (default: None)
-  --ccfv2_path CCFV2_PATH
+  --ccfv2-path CCFV2_PATH
                         Path to CCFv2 Volume. (default: None)
-  --experiment_id EXPERIMENT_ID
+  --experiment-id EXPERIMENT_ID
                         Experiment ID from Allen Brain to use. (default: None)
-  --output_dir OUTPUT_DIR
+  --output-dir OUTPUT_DIR
                         Path to directory where to save the results. (default: None)
-  --ccfv3_path CCFV3_PATH
+  --ccfv3-path CCFV3_PATH
                         Path to CCFv3 Volume. (default: None)
   --coordinate-sys {ccfv2,ccfv3}
                         Downsampling coefficient for the image download. (default: ccfv2)

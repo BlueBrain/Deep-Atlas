@@ -35,7 +35,7 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        "--nissl_path",
+        "--nissl-path",
         type=Path,
         required=True,
         help="""\
@@ -43,7 +43,7 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--ccfv2_path",
+        "--ccfv2-path",
         type=Path,
         required=True,
         help="""\
@@ -51,7 +51,7 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--experiment_id",
+        "--experiment-id",
         type=int,
         required=True,
         help="""\
@@ -59,7 +59,7 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--output_dir",
+        "--output-dir",
         type=Path,
         required=True,
         help="""\
@@ -67,7 +67,7 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--ccfv3_path",
+        "--ccfv3-path",
         type=Path,
         help="""\
         Path to CCFv3 Volume.
