@@ -28,18 +28,19 @@ it is also possible to run different stages of the pipeline separately.
 See below the `--help` of the `full_pipeline.py` script.
 
 ```bash
-usage: full_pipeline.py [-h] [--ccfv3_path CCFV3_PATH] [--coordinate-sys {ccfv2,ccfv3}] [--downsample-img DOWNSAMPLE_IMG] [--interpolator-name {linear,rife,cain,maskflownet,raftnet}]
-                        [--interpolator-checkpoint INTERPOLATOR_CHECKPOINT] [-e] [-f]
-                        nissl_path ccfv2_path experiment_id output_dir
-
-positional arguments:
-  nissl_path            Path to Nissl Volume.
-  ccfv2_path            Path to CCFv2 Volume.
-  experiment_id         Experiment ID from Allen Brain to use.
-  output_dir            Path to directory where to save the results.
+usage: full_pipeline.py [-h] --nissl_path NISSL_PATH --ccfv2_path CCFV2_PATH --experiment_id EXPERIMENT_ID --output_dir OUTPUT_DIR [--ccfv3_path CCFV3_PATH] [--coordinate-sys {ccfv2,ccfv3}] [--downsample-img DOWNSAMPLE_IMG]
+                        [--interpolator-name {linear,rife,cain,maskflownet,raftnet}] [--interpolator-checkpoint INTERPOLATOR_CHECKPOINT] [-e] [-f]
 
 optional arguments:
   -h, --help            show this help message and exit
+  --nissl_path NISSL_PATH
+                        Path to Nissl Volume. (default: None)
+  --ccfv2_path CCFV2_PATH
+                        Path to CCFv2 Volume. (default: None)
+  --experiment_id EXPERIMENT_ID
+                        Experiment ID from Allen Brain to use. (default: None)
+  --output_dir OUTPUT_DIR
+                        Path to directory where to save the results. (default: None)
   --ccfv3_path CCFV3_PATH
                         Path to CCFv3 Volume. (default: None)
   --coordinate-sys {ccfv2,ccfv3}
@@ -52,7 +53,6 @@ optional arguments:
                         Path of the interpolator checkpoints. (default: None)
   -e, --expression      If True, download and apply deformation to threshold images too. (default: False)
   -f, --force           If True, force to recompute every steps. (default: False)
-
 ```
 
 The user is supposed to provide the following inputs (positional arguments)
