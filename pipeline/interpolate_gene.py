@@ -64,7 +64,7 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--saving_format",
+        "--saving-format",
         type=str,
         choices=("nrrd", "npy"),
         default="npy",
@@ -214,6 +214,7 @@ def main(
         )
     else:
         from convert_npy_nrrd import HEADER
+        HEADER["space dimension"] = len(predicted_volume.shape)
         HEADER["sizes"] = np.array(predicted_volume.shape)
         nrrd.write(output_path + ".nrrd", predicted_volume, header=HEADER)
 
