@@ -21,17 +21,21 @@ import nrrd
 import numpy as np
 
 # Match voxcell requirements:
-HEADER = OrderedDict([('type', 'uint32'),
-              ('dimension', 3),
-              ('space dimension', 3),
-              # ('sizes', np.array([528, 320, 456])),
-              ('space directions',
-               np.array([[25.,  0.,  0.],
-                      [ 0., 25.,  0.],
-                      [ 0.,  0., 25.]])),
-              ('endian', 'little'),
-              ('encoding', 'gzip'),
-              ('space origin', np.array([0., 0., 0.]))])
+HEADER = OrderedDict(
+    [
+        ("type", "uint32"),
+        ("dimension", 3),
+        ("space dimension", 3),
+        ("sizes", None),
+        (
+            "space directions",
+            np.array([[25.0, 0.0, 0.0], [0.0, 25.0, 0.0], [0.0, 0.0, 25.0]]),
+        ),
+        ("endian", "little"),
+        ("encoding", "gzip"),
+        ("space origin", np.array([0.0, 0.0, 0.0])),
+    ]
+)
 
 
 def parse_args():
