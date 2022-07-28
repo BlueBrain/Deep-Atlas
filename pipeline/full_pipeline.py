@@ -107,7 +107,8 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--format",
+        "-s",
+        "--saving-format",
         type=str,
         choices=("nrrd", "npy"),
         default="npy",
@@ -144,7 +145,7 @@ def main(
     interpolator_name: str,
     interpolator_checkpoint: Path | str | None,
     output_dir: Path | str,
-    format: str,
+    saving_format: str,
     expression: bool = False,
     force: bool = False,
 ) -> int:
@@ -236,6 +237,7 @@ def main(
                 metadata_path=aligned_results_dir / f"{experiment_id}-metadata.json",
                 interpolator_name=interpolator_name,
                 interpolator_checkpoint=interpolator_checkpoint,
+                saving_format=saving_format,
                 reference_path=nissl_path,
                 output_dir=interpolation_results_dir,
             )

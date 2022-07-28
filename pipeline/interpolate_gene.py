@@ -64,7 +64,7 @@ def parse_args():
         """,
     )
     parser.add_argument(
-        "--format",
+        "--saving_format",
         type=str,
         choices=("nrrd", "npy"),
         default="npy",
@@ -146,7 +146,7 @@ def main(
     metadata_path: Path | str,
     interpolator_name: str,
     interpolator_checkpoint: str | Path | None,
-    format: str,
+    saving_format: str,
     reference_path: str | Path,
     output_dir: Path | str | None = None,
 ) -> int:
@@ -207,7 +207,7 @@ def main(
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = str(output_dir / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}")
 
-    if format == "npy":
+    if saving_format == "npy":
         np.save(
             output_path + ".npy",
             predicted_volume,
