@@ -14,10 +14,24 @@
 # limitations under the License.
 
 import argparse
+from collections import OrderedDict
 from pathlib import Path
 
 import nrrd
 import numpy as np
+
+# Match voxcell requirements:
+HEADER = OrderedDict([('type', 'uint32'),
+              ('dimension', 3),
+              ('space dimension', 3),
+              # ('sizes', np.array([528, 320, 456])),
+              ('space directions',
+               np.array([[25.,  0.,  0.],
+                      [ 0., 25.,  0.],
+                      [ 0.,  0., 25.]])),
+              ('endian', 'little'),
+              ('encoding', 'gzip'),
+              ('space origin', np.array([0., 0., 0.]))])
 
 
 def parse_args():
@@ -44,13 +58,25 @@ def parse_args():
         Path to the output volume.
         """,
     )
+    parser.add_argument(
+        "-h",
+        "--header",
+        type=Path,
+        help=f"""\
+        If specified, the header {HEADER} is saved.
+        """,
+    )
     return parser.parse_args()
 
 
-def main(input_path: Path, output_path: Path) -> int:
+def main(input_path: Path, output_path: Path, header: bool) -> int:
 
     array = np.load(input_path)
-    nrrd.write(str(output_path), array)
+    if header:
+        HEADER["sizes"] = np.array(array.shape)
+        nrrd.write(str(output_path), array, header=HEADER)
+    else:
+        nrrd.write(str(output_path), array)
     return 0
 
 

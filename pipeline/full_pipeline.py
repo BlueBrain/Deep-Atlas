@@ -107,6 +107,15 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "--format",
+        type=str,
+        choices=("nrrd", "npy"),
+        default="npy",
+        help="""\
+        Format to save the output volumes.
+        """,
+    )
+    parser.add_argument(
         "-e",
         "--expression",
         action="store_true",
@@ -135,6 +144,7 @@ def main(
     interpolator_name: str,
     interpolator_checkpoint: Path | str | None,
     output_dir: Path | str,
+    format: str,
     expression: bool = False,
     force: bool = False,
 ) -> int:
