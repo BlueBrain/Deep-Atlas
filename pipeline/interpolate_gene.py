@@ -153,11 +153,12 @@ def main(
     section_numbers = [int(s) for s in metadata["section_numbers"]]
     axis = metadata["axis"]
 
+    volume_shape = [num // metadata["downsample-ref"] for num in [13200, 8000, 11400]]
     # Wrap the data into a GeneDataset class
     gene_dataset = GeneDataset(
         section_images,
         section_numbers,
-        volume_shape=(528, 320, 456, 3),
+        volume_shape=(*volume_shape, 3),
         axis=axis,
     )
 
@@ -197,7 +198,7 @@ def main(
 
     np.save(
         output_dir
-        / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}.npy",
+        / f"{experiment_id}-{metadata['downsample-ref']}-{interpolator_name}-interpolated-{image_type}.npy",
         predicted_volume,
     )
 
