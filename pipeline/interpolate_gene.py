@@ -214,7 +214,7 @@ def main(
         )
     else:
         from convert_npy_nrrd import HEADER
-        HEADER["space dimension"] = len(predicted_volume.shape)
+        HEADER["dimension"] = len(predicted_volume.shape)
         HEADER["sizes"] = np.array(predicted_volume.shape)
         nrrd.write(output_path + ".nrrd", predicted_volume, header=HEADER)
 

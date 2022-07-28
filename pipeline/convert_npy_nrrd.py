@@ -24,8 +24,8 @@ import numpy as np
 HEADER = OrderedDict(
     [
         ("type", "uint32"),
-        ("dimension", 3),
-        ("space dimension", None),
+        ("dimension", None),
+        ("space dimension", 3),
         ("sizes", None),
         (
             "space directions",
@@ -77,7 +77,7 @@ def main(input_path: Path, output_path: Path, header: bool) -> int:
 
     array = np.load(input_path)
     if header:
-        HEADER["space dimension"] = len(array.shape)
+        HEADER["dimension"] = len(array.shape)
         HEADER["sizes"] = np.array(array.shape)
         nrrd.write(str(output_path), array, header=HEADER)
     else:
