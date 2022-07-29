@@ -60,7 +60,9 @@ The user is supposed to provide the following inputs (positional arguments)
 * `nissl_path` - path to a Nissl volume
 * `ccfv2_path` - path to an annotation volume in the CCFv2 reference space
 * `ccfv3_path` - path to an annotation volume in the CCFv3 reference space
+  (needed only if the `coordinate system` chosen is `CCFv3`)
 * `experiment_id` - unique identifier of the ISH experiment
+* `output_dir` - directory where to save the results
 
 
 Note that there are multiple optional arguments. For example, one
@@ -68,6 +70,13 @@ can decide what coordinate system to use - `ccfv2` or `ccfv3`. By providing
 the flag `--expression` preprocessed expression images are going to be
 included. Finally, one can also pass stage specific parameters 
 (e.g. `--interpolator-name` for the interpolation stage).
+
+Concerning the interpolation part, machine learning models are used to make 
+those predictions (except if the interpolator chosen is `linear`). It is then
+needed to download the model and to specify to path through the 
+`--interpolator-checkpoint` variable. To download the models, please follow the
+instructions specified in the atlinter documentation 
+[here](https://github.com/BlueBrain/atlas-interpolation#data).
 
 
 ## Docker
