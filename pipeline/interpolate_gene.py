@@ -64,6 +64,15 @@ def parse_args():
         """,
     )
     parser.add_argument(
+        "--saving-format",
+        type=str,
+        choices=("nrrd", "npy"),
+        default="npy",
+        help="""\
+        Format to save the output volumes.
+        """,
+    )
+    parser.add_argument(
         "--reference-path",
         type=Path,
         help="""\
@@ -137,10 +146,12 @@ def main(
     metadata_path: Path | str,
     interpolator_name: str,
     interpolator_checkpoint: str | Path | None,
+    saving_format: str,
     reference_path: str | Path,
     output_dir: Path | str | None = None,
 ) -> int:
     """Implement main function."""
+    import nrrd
     import numpy as np
     from atlinter.data import GeneDataset
     from utils import check_and_load
@@ -194,12 +205,18 @@ def main(
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = str(output_dir / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}")
 
-    np.save(
-        output_dir
-        / f"{experiment_id}-{interpolator_name}-interpolated-{image_type}.npy",
-        predicted_volume,
-    )
+    if saving_format == "npy":
+        np.save(
+            output_path + ".npy",
+            predicted_volume,
+        )
+    else:
+        from convert_npy_nrrd import HEADER
+        HEADER["dimension"] = len(predicted_volume.shape)
+        HEADER["sizes"] = np.array(predicted_volume.shape)
+        nrrd.write(output_path + ".nrrd", predicted_volume, header=HEADER)
 
     return 0
 
