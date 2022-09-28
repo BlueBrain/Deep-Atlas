@@ -182,7 +182,9 @@ def main(
     if interpolator_name in {"cain", "linear", "rife"}:
         from atlinter.pair_interpolation import GeneInterpolate
 
-        gene_interpolate = GeneInterpolate(gene_dataset, interpolator_model)
+        gene_interpolate = GeneInterpolate(
+            gene_dataset, interpolator_model, border_predictions=False
+        )
         predicted_volume = gene_interpolate.predict_volume()
     else:
         from atlinter.optical_flow import GeneOpticalFlow
