@@ -195,7 +195,7 @@ def main(
     neg_values = [False if sec > 0 else True for sec in metadata_dict["section_numbers"]]
     if np.sum(neg_values) > 0:
         raise ValueError(
-            "Allen Brain is communicating negative section positions. "
+            "Allen Brain is communicating negative positions."
             "For now, we decided to ignore those datasets."
         )
 
