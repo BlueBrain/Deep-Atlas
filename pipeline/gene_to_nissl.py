@@ -112,8 +112,8 @@ def registration(
             nissl_slice = nissl_volume[int(section_number)]
         except IndexError:
             logger.warn(
-                f"One of the gene slice has a section number ({section_number})"
-                f"out of nissl volume shape {nissl_volume.shape}. This slice is"
+                f"One of the gene slice has a section number ({section_number}) "
+                f"out of nissl volume shape {nissl_volume.shape}. This slice is "
                 "removed from the pipeline."
             )
             section_numbers_kept.append(False)
