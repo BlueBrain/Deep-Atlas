@@ -107,6 +107,8 @@ def registration(
     section_numbers_kept = []
     for i, (section_number, gene_slice) in enumerate(zip(section_numbers, gene_volume)):
         try:
+            if section_number < 0:
+                raise IndexError("The index is negative.")
             nissl_slice = nissl_volume[int(section_number)]
         except IndexError:
             logger.warn(

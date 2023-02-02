@@ -192,6 +192,13 @@ def main(
     if expression_np is not None:
         np.save(output_dir / f"{experiment_id}-expression.npy", expression_np)
 
+    neg_values = [False if sec > 0 else True for sec in metadata_dict["section_numbers"]]
+    if np.sum(neg_values) > 0:
+        raise ValueError(
+            "Allen Brain is communicating negative section positions. "
+            "For now, we decided to ignore those datasets."
+        )
+
     return 0
 
 
