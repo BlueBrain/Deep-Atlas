@@ -84,34 +84,41 @@ We provide a docker file that allows you to run the `pipeline` on a docker conta
 To build the docker image run the following command:
 
 ```bash
-docker build 
--f docker/Dockerfile
--t deep-atlas-pipeline
-.
+docker build -f docker/Dockerfile -t deep-atlas-pipeline .
 ```
-By default, the user is `guest` but if one wants to configure a specific user, 
-one needs to first uncomment the line and add the info about the users.
-The list of users has a comma separated list of users with the format `<username>/<userid>`.
-```bash
-ENV DEAL_USER_IDS="$(whoami)/$(id -u)"
-```
-or one can define the environment variable and use add this info 
-to the CLI command of `docker build`
-```bash
-export DEAL_USER_IDS="$(whoami)/$(id -u)"
-docker build \
--f docker/Dockerfile \
--t deep-atlas-pipeline \
---build-arg DEAL_USER_IDS \
-.
-```
-
 To run the container use the following command:
 ```bash
 docker run --rm -it deep-atlas-pipeline
 ```
+### Specify user and group ids
 
-### Singularity for BB5
+By default, the user within the docker container is `guest`, its id is 1000, and its group is 999. \
+Files created by this user within the container might not be accessible to the user running 
+the container, if their ids do not match. \
+If one wants to configure a specific user, one needs to adapt the `docker/Dockerfile` file, 
+changing the following lines with the users .
+```bash
+ARG DEAL_USER_IDS
+ARG DEAL_GROUP_ID=${DEAL_GROUP_ID:-999}
+```
+The list of users has a comma separated list of users with the format `<username>/<userid>`. \
+Only one group id should be provided. The default user group is therefore recommended.
+
+Alternatively, one can define the environment variable and add this info 
+to the CLI command of `docker build`
+```bash
+export DEAL_USER_IDS="$(whoami)/$(id -u)"
+export DEAL_GROUP_ID=$(id -g)
+docker build -f docker/Dockerfile -t deep-atlas-pipeline \
+--build-arg DEAL_USER_IDS --build-arg DEAL_GROUP_ID .
+```
+
+To specify the user to use when running the container, use the following command:
+```bash
+docker run --rm -it -u <userid>  deep-atlas-pipeline
+```
+
+## Singularity for BB5
 Docker is not supported in BB5 and [singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html) will be used instead.
 1) ssh into BB5. 
 

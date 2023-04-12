@@ -2,17 +2,16 @@
 # for example "python:3.7" can be used.
 FROM nvidia/cuda:10.2-devel-ubuntu18.04
 
-# ENVs are visible both at image build time and container run time.
-# We want the http proxys to be visible in both cases and therefore
-# set them equal to the values of the ARGs.
-ENV http_proxy=http://bbpproxy.epfl.ch:80
-ENV https_proxy=http://bbpproxy.epfl.ch:80
-ENV HTTP_PROXY=http://bbpproxy.epfl.ch:80
-ENV HTTPS_PROXY=http://bbpproxy.epfl.ch:80
-#ENV DEAL_USER_IDS=
+# By default, only the user guest/1000 with group 1000 will be created.
+# Set the lines below with your users info
+# e.g.: ARG DEAL_USER_IDS="<username1>/<userid1>,<username2>/<userid2>"
+ARG DEAL_USER_IDS
+# e.g.: ARG DEAL_GROUP_ID=<groupid>
+ARG DEAL_GROUP_ID=${DEAL_GROUP_ID:-999}
 
-RUN test -n "$DEAL_USER_IDS" || echo "WARNING: variable DEAL_USER_IDS was not set, creating only default user 'guest/1000' !"
-
+RUN if [ ! -z $DEAL_USER_IDS ]; then \
+echo "The following user(s) will be added to the container: \
+$DEAL_USER_IDS, with group: docker/$DEAL_GROUP_ID"; fi
 
 # Debian's default LANG=C breaks python3.
 # See commends in the official python docker file:
@@ -46,12 +45,11 @@ update-alternatives --install /usr/local/bin/python python /usr/bin/python3.7 0
 # Install requirements
 COPY requirements.txt /tmp
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
-ARG MY_USER_ID
+
+RUN groupadd -g $DEAL_GROUP_ID docker
+ENV USER_IDS=$DEAL_USER_IDS",guest/1000"
 COPY docker/utils.sh /tmp
-RUN \
-. /tmp/utils.sh && \
-groupadd -g 999 docker && \
-create_users "${DEAL_USER_IDS},guest/1000" "docker"
+RUN bash -c '. /tmp/utils.sh; create_users "${USER_IDS}" "docker"'
 
 # Entry point
 EXPOSE 8888
