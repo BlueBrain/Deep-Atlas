@@ -115,7 +115,7 @@ docker build -f docker/Dockerfile -t deep-atlas-pipeline \
 
 To specify the user to use when running the container, use the following command:
 ```bash
-docker run --rm -it -u <userid>  deep-atlas-pipeline
+docker run --rm -it -u <username>  deep-atlas-pipeline
 ```
 
 ## Singularity for BB5
