@@ -2,6 +2,12 @@
 # for example "python:3.7" can be used.
 FROM nvidia/cuda:10.2-devel-ubuntu18.04
 
+# Proxys only for EPFL usages.
+#ENV http_proxy=http://bbpproxy.epfl.ch:80
+#ENV https_proxy=http://bbpproxy.epfl.ch:80
+#ENV HTTP_PROXY=http://bbpproxy.epfl.ch:80
+#ENV HTTPS_PROXY=http://bbpproxy.epfl.ch:80
+
 # By default, only the user guest/1000 with group 1000 will be created.
 # Set the lines below with your users info
 # e.g.: ARG DEAL_USER_IDS="<username1>/<userid1>,<username2>/<userid2>"
