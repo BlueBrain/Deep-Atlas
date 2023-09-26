@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 from typing import Any, Generator, Optional, Tuple
 
+import cv2
 import numpy as np
 import PIL
 from atldld.base import DisplacementField
@@ -67,6 +68,14 @@ def parse_args():
         If True, download and apply deformation to threshold images too.
         """,
     )
+    parser.add_argument(
+        "--rgb",
+        action="store_true",
+        help="""\
+        If True, images will be saved under RGB format.
+        Otherwise, images will be saved under grayscale format.
+        """,
+    )
     args = parser.parse_args()
 
     return args
@@ -79,6 +88,7 @@ def postprocess_dataset(
         None,
     ],
     n_images: int,
+    rgb: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     """Post process given dataset.
 
@@ -90,6 +100,9 @@ def postprocess_dataset(
     n_images
         The overall number of slices we are going to download.
         Needs to be passed separately since the `dataset` is a generator.
+    rgb
+        If True, images will be saved under RGB format.
+        Otherwise, images will be saved under grayscale format.
 
     Returns
     -------
@@ -119,6 +132,8 @@ def postprocess_dataset(
         section_numbers.append(section_coordinate // 25)
         image_ids.append(img_id)
         warped_img = 255 - df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
+        if not rgb:
+            warped_img = cv2.cvtColor(warped_img, cv2.RGB2GRAY)
         dataset_np.append(warped_img)
 
         if img_expression is not None:
@@ -142,6 +157,7 @@ def main(
     output_dir: Path | str,
     downsample_img: int,
     expression: bool = True,
+    rgb: bool = False,
 ) -> int:
     """Download gene expression dataset.
 
@@ -156,6 +172,9 @@ def main(
         This factor is going to reduce the size.
     expression
         If True, threshold images are downloaded too.
+    rgb
+        If True, images will be saved under RGB format.
+        Otherwise, images will be saved under grayscale format.
     """
     # Imports
     import json
@@ -180,7 +199,7 @@ def main(
     dataset_gen = dataset.run()
     axis = CommonQueries.get_axis(experiment_id)
     dataset_np, expression_np, metadata_dict = postprocess_dataset(
-        dataset_gen, len(dataset)
+        dataset_gen, len(dataset), rgb
     )
     metadata_dict["axis"] = axis
 
