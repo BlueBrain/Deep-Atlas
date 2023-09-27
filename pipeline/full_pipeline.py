@@ -132,6 +132,14 @@ def parse_args():
         If True, force to recompute every steps.
         """,
     )
+    parser.add_argument(
+        "--rgb",
+        action="store_true",
+        help="""\
+        If True, images will be saved under RGB format.
+        Otherwise, images will be saved under grayscale format.
+        """,
+    )
     return parser.parse_args()
 
 
@@ -148,6 +156,7 @@ def main(
     saving_format: str,
     expression: bool = False,
     force: bool = False,
+    rgb: bool = False,
 ) -> int:
     """Implement the main function."""
     from download_gene import main as download_gene_main
@@ -180,7 +189,9 @@ def main(
 
         nissl_path = warped_nissl_path
 
-    gene_experiment_dir = output_dir / "download-gene"
+    color = "rgb" if rgb else "grayscale"
+
+    gene_experiment_dir = output_dir / "download-gene" / color
     gene_experiment_path = gene_experiment_dir / f"{experiment_id}.npy"
     if not gene_experiment_path.exists() or force:
         logger.info("Downloading Gene Expression...")
@@ -189,6 +200,7 @@ def main(
             output_dir=gene_experiment_dir,
             downsample_img=downsample_img,
             expression=expression,
+            rgb=rgb,
         )
     else:
         logger.info(
@@ -196,7 +208,7 @@ def main(
             f"{experiment_id} is already downloaded and saved under {gene_experiment_path}"
         )
 
-    aligned_results_dir = output_dir / "gene-to-nissl" / coordinate_sys
+    aligned_results_dir = output_dir / "gene-to-nissl" / coordinate_sys / color
     aligned_gene_path = aligned_results_dir / f"{experiment_id}-warped-gene.npy"
 
     if not aligned_gene_path.exists() or force:
@@ -215,7 +227,7 @@ def main(
     else:
         logger.info("Aligning downloaded Gene Expression to Nissl volume: Skipped")
 
-    interpolation_results_dir = output_dir / "interpolate-gene" / coordinate_sys
+    interpolation_results_dir = output_dir / "interpolate-gene" / coordinate_sys / color
     interpolated_gene_path = (
         interpolation_results_dir
         / f"{experiment_id}-{interpolator_name}-interpolated-gene.npy"
