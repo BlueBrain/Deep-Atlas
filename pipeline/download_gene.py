@@ -20,10 +20,10 @@ import sys
 from pathlib import Path
 from typing import Any, Generator, Optional, Tuple
 
-import cv2
 import numpy as np
 import PIL
 from atldld.base import DisplacementField
+from skimage.color import rgb2gray
 from tqdm import tqdm
 
 logger = logging.getLogger("download-gene")
@@ -133,7 +133,7 @@ def postprocess_dataset(
         image_ids.append(img_id)
         warped_img = 255 - df.warp(img, border_mode="constant", c=img[0, 0, :].tolist())
         if not rgb:
-            warped_img = cv2.cvtColor(warped_img, cv2.RGB2GRAY)
+            warped_img = rgb2gray(warped_img)
         dataset_np.append(warped_img)
 
         if img_expression is not None:
