@@ -123,7 +123,7 @@ def postprocess_dataset(
 
         if img_expression is not None:
             warped_exp = df.warp(
-                img_expression, border_mode="constant", c=img[255, 255, :].tolist()
+                img_expression, border_mode="constant", c=img[0, 0, :].tolist()
             )
             expression_np.append(warped_exp)
 
