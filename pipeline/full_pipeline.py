@@ -154,6 +154,8 @@ def main(
     from gene_to_nissl import main as gene_to_nissl_main
     from interpolate_gene import main as interpolate_gene_main
     from nissl_to_ccfv3 import main as nissl_to_ccfv3_main
+    import pathlib
+    from atldld.config import user_cache_dir
 
     output_dir = Path(output_dir)
 
@@ -179,9 +181,19 @@ def main(
             )
 
         nissl_path = warped_nissl_path
-
+        
+    #remove contents of cache directory to prevent it from filling up
+    folder = pathlib.Path( user_cache_dir())
+    for filename in pathlib.Path(".").glob("*.jpg"):
+         filename.unlink()
+    
     gene_experiment_dir = output_dir / "download-gene"
-    gene_experiment_path = gene_experiment_dir / f"{experiment_id}.npy"
+    if expression:
+        gene_experiment_path = gene_experiment_dir / f"{experiment_id}-expres\
+sion.npy"
+    else:
+        gene_experiment_path = gene_experiment_dir / f"{experiment_id}.npy"
+
     if not gene_experiment_path.exists() or force:
         logger.info("Downloading Gene Expression...")
         download_gene_main(
